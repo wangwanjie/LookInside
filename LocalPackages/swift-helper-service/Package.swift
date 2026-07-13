@@ -150,5 +150,6 @@ let package = Package(
                 .product(name: "SwiftyXPC", package: "SwiftyXPC"),
             ]
         ),
-    ]
+    ],
+    swiftLanguageModes: [.v5]
 )

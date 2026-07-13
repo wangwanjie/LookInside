@@ -6,6 +6,20 @@
 	objectVersion = 100;
 	objects = {
 
+/* Begin PBXAggregateTarget section */
+		E9D000012FC4000000010001 /* Build Release DMG */ = {
+			isa = PBXAggregateTarget;
+			buildConfigurationList = E9D000042FC4000000010001 /* Build configuration list for PBXAggregateTarget "Build Release DMG" */;
+			buildPhases = (
+				E9D000022FC4000000010001 /* Build Release DMG */,
+			);
+			dependencies = (
+			);
+			name = "Build Release DMG";
+			productName = "Build Release DMG";
+		};
+/* End PBXAggregateTarget section */
+
 /* Begin PBXBuildFile section */
 		50EAE1AA2F71C01A00EBE063 /* Security.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AA1CAA3D22E471EC006D9285 /* Security.framework */; };
 		50EAE1AB2F71C01A00EBE063 /* Quartz.framework in Frameworks */ = {isa = PBXBuildFile; fileRef = AAB9517A22C3AECA00A5F958 /* Quartz.framework */; };
@@ -35,7 +49,6 @@
 				About/LKAboutViewController.m,
 				About/LKAboutWindowController.m,
 				AppDelegate.m,
-				AppIcon.icon,
 				Assets.xcassets,
 				"Base/Category/LookinAttributesGroup+LookinClient.m",
 				"Base/Category/LookinAttributesSection+LookinClient.m",
@@ -786,6 +799,9 @@
 							};
 						};
 					};
+					E9D000012FC4000000010001 = {
+						CreatedOnToolsVersion = 16.4;
+					};
 				};
 			};
 			buildConfigurationList = AA48F29621CC0CA50032EC2C /* Build configuration list for PBXProject "LookInside" */;
@@ -811,6 +827,7 @@
 			projectRoot = "";
 			targets = (
 				AA48F29A21CC0CA50032EC2C /* LookInside */,
+				E9D000012FC4000000010001 /* Build Release DMG */,
 			);
 		};
 /* End PBXProject section */
@@ -852,7 +869,7 @@
 			shellPath = /bin/sh;
 			shellScript = (
 				"if [ ! -d \"$SRCROOT/../LookInside-Injector\" ]; then",
-				"    if [ \"$CONFIGURATION\" = \"Release\" ]; then",
+				"    if [ \"$CONFIGURATION\" = \"Release\" ] && [ \"${LOOKINSIDE_ALLOW_MISSING_INJECTOR:-0}\" != \"1\" ]; then",
 				"        echo \"error: LookInside-Injector not present; Release builds must embed the injector daemon\"",
 				"        exit 1",
 				"    fi",
@@ -900,6 +917,25 @@
 				"    /bin/zsh -lc \"$PREPARE_SCRIPT\"",
 				"",
 			);
+		E9D000022FC4000000010001 /* Build Release DMG */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Build Release DMG";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(SRCROOT)/build/releases/manual/LookInside.dmg",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/bash;
+			shellScript = "bash \"$SRCROOT/Scripts/build-release-dmg.sh\" --allow-missing-injector\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -1207,6 +1243,22 @@
 			};
 			name = Release;
 		};
+		E9D000052FC4000000010001 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				PRODUCT_NAME = "Build Release DMG";
+			};
+			name = Debug;
+		};
+		E9D000062FC4000000010001 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				PRODUCT_NAME = "Build Release DMG";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -1226,13 +1278,33 @@
 			);
 			defaultConfigurationName = Release;
 		};
+		E9D000042FC4000000010001 /* Build configuration list for PBXAggregateTarget "Build Release DMG" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				E9D000052FC4000000010001 /* Debug */,
+				E9D000062FC4000000010001 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 /* End XCConfigurationList section */
 
-/* Begin XCRemoteSwiftPackageReference section */
+/* Begin XCLocalSwiftPackageReference section */
 		E37B8D0B2F97B1B100600001 /* XCLocalSwiftPackageReference "LocalPackages/swift-demangling" */ = {
 			isa = XCLocalSwiftPackageReference;
 			relativePath = "LocalPackages/swift-demangling";
 		};
+		E97210042FC2D5C0003AAEA6 /* XCLocalSwiftPackageReference "LocalPackages/RunningApplicationKit" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = LocalPackages/RunningApplicationKit;
+		};
+		E97210072FC2E3FC003AAEA6 /* XCLocalSwiftPackageReference "LocalPackages/swift-helper-service" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = "LocalPackages/swift-helper-service";
+		};
+/* End XCLocalSwiftPackageReference section */
+
+/* Begin XCRemoteSwiftPackageReference section */
 		E37B8D0F0F97B1B100600001 /* XCRemoteSwiftPackageReference "Sparkle" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/sparkle-project/Sparkle";

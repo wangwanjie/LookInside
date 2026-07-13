@@ -147,11 +147,7 @@ class RunningItemPickerViewController<Item: RunningItem>: NSViewController, NSTa
         bottomStackView.addView(confirmButton, in: .trailing)
         bottomStackView.setCustomSpacing(12, after: cancelButton)
 
-        if #available(macOS 26.0, *) {
-            searchField.controlSize = .extraLarge
-        } else {
-            searchField.controlSize = .large
-        }
+        searchField.controlSize = .large
         searchField.refusesFirstResponder = true
         searchField.target = self
         searchField.action = #selector(searchTextFieldDidChange(_:))
