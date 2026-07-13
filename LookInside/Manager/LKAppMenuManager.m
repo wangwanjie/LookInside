@@ -11,11 +11,9 @@
 #import "LKPreferenceManager.h"
 #import "LKWindowController.h"
 #import "LookInside-Swift.h"
-#import <Sparkle/Sparkle.h>
 
 static NSUInteger const kTag_About = 11;
 static NSUInteger const kTag_Preferences = 12;
-static NSUInteger const kTag_CheckUpdates = 13;
 static NSUInteger const kTag_PrivateDiscriminatorSettings = 20;
 static NSUInteger const kTag_ActivateSwiftUISupport = 14;
 static NSUInteger const kTag_SwiftUISupportLicense = 15;
@@ -61,7 +59,6 @@ static NSMenuItem *LKSubmenuItem(NSString *title, NSMenu *submenu, NSInteger tag
 
 @property(nonatomic, copy) NSDictionary<NSNumber *, NSString *> *delegatingTagToSelMap;
 @property(nonatomic, strong) NSMenu *recentDocumentsMenu;
-@property(nonatomic, strong) SPUStandardUpdaterController *updaterController;
 
 @end
 
@@ -99,8 +96,6 @@ static NSMenuItem *LKSubmenuItem(NSString *title, NSMenu *submenu, NSInteger tag
     [menu addItem:[NSMenuItem separatorItem]];
     [menu addItem:LKMenuItem(@"Preferences…", nil, @",", NSEventModifierFlagCommand, kTag_Preferences)];
     [menu addItem:LKMenuItem(@"Private Discriminator Settings…", nil, @"", 0, kTag_PrivateDiscriminatorSettings)];
-    [menu addItem:[NSMenuItem separatorItem]];
-    [menu addItem:LKMenuItem(@"Check for Updates…", nil, @"", 0, kTag_CheckUpdates)];
     [menu addItem:[NSMenuItem separatorItem]];
     [menu addItem:LKMenuItem([NSString stringWithFormat:@"Hide %@", appName], @selector(hide:), @"h", NSEventModifierFlagCommand, 0)];
     [menu addItem:LKMenuItem(@"Hide Others", @selector(hideOtherApplications:), @"h", NSEventModifierFlagCommand | NSEventModifierFlagOption, 0)];
@@ -292,24 +287,8 @@ static NSMenuItem *LKSubmenuItem(NSString *title, NSMenu *submenu, NSInteger tag
     }
 }
 
-// Debug builds leave SPARKLE_PUBLIC_ED_KEY empty -- only the release workflow
-// injects the real key -- so SUPublicEDKey resolves to an empty string and
-// Sparkle refuses to start, putting up an "Unable to Check For Updates" alert
-// on every launch. Skip the updater entirely in that case; dropping a key into
-// Configuration/custom.xcconfig restores the real update flow locally.
-- (BOOL)_shouldStartSparkleUpdater {
-#if DEBUG
-    NSString *publicKey = [[NSBundle mainBundle] objectForInfoDictionaryKey:@"SUPublicEDKey"];
-    return publicKey.length > 0;
-#else
-    return YES;
-#endif
-}
-
 - (void)setup {
-    if ([self _shouldStartSparkleUpdater]) {
-        self.updaterController = [[SPUStandardUpdaterController alloc] initWithStartingUpdater:YES updaterDelegate:nil userDriverDelegate:nil];
-    }
+
     [self _installMainMenu];
 
     self.delegatingTagToSelMap = @{
@@ -342,10 +321,6 @@ static NSMenuItem *LKSubmenuItem(NSString *title, NSMenu *submenu, NSInteger tag
     NSMenuItem *menuItem_privateDiscriminatorSettings = [menu_lookin itemWithTag:kTag_PrivateDiscriminatorSettings];
     menuItem_privateDiscriminatorSettings.target = self;
     menuItem_privateDiscriminatorSettings.action = @selector(_handlePrivateDiscriminatorSettings);
-
-    NSMenuItem *menuItem_checkUpdates = [menu_lookin itemWithTag:kTag_CheckUpdates];
-    menuItem_checkUpdates.target = self;
-    menuItem_checkUpdates.action = @selector(_handleCheckUpdates);
 
     NSMenu *menu_file = [menu itemAtIndex:1].submenu;
     menu_file.autoenablesItems = NO;
@@ -498,10 +473,6 @@ static NSMenuItem *LKSubmenuItem(NSString *title, NSMenu *submenu, NSInteger tag
         return;
     }
     [wc appMenuManagerDidSelectExpansionIndex:index];
-}
-
-- (void)_handleCheckUpdates {
-    [self.updaterController checkForUpdates:nil];
 }
 
 - (void)_handleAbout {
