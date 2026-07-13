@@ -1,0 +1,89 @@
+#if os(macOS) || targetEnvironment(macCatalyst)
+import Foundation
+import HelperCommunication
+import ServiceManagement
+@preconcurrency private import SwiftyXPC
+
+public actor HelperClient {
+    public enum Error: LocalizedError {
+        case message(String)
+        case invalidConnection
+        public var errorDescription: String? {
+            switch self {
+            case let .message(message):
+                return message
+            case .invalidConnection:
+                return "Invalid connection"
+            }
+        }
+    }
+
+    private var toolConnection: SwiftyXPC.XPCConnection?
+
+    private var serverConnectionByInfo: [HelperServerInfo: SwiftyXPC.XPCConnection] = [:]
+
+    public init() {}
+
+    public var isConnectedToTool: Bool {
+        get async {
+            do {
+                guard let toolConnection else { return false }
+                try await toolConnection.sendMessage(request: PingRequest())
+                return true
+            } catch {
+                print(error)
+                return false
+            }
+        }
+    }
+
+    public func availableServerInfos() async throws -> [HelperServerInfo] {
+        guard let toolConnection else { throw Error.invalidConnection }
+        return try await toolConnection.sendMessage(request: ListServerInfosRequest()).infos
+    }
+
+    public func connectToServer(info: HelperServerInfo) async throws {
+        guard let toolConnection else { throw Error.invalidConnection }
+        let endpoint = try await toolConnection.sendMessage(request: FetchEndpointRequest(info: info)).endpoint
+        let connection = try XPCConnection(type: .remoteServiceFromEndpoint(endpoint))
+        connection.errorHandler = { connection, error in
+            print(error)
+        }
+        connection.activate()
+        serverConnectionByInfo[info] = connection
+        try await connection.sendMessage(request: PingRequest())
+    }
+
+    public func connectToTool(machServiceName: String, isPrivilegedHelperTool: Bool) async throws {
+        let connection = try SwiftyXPC.XPCConnection(type: .remoteMachService(serviceName: machServiceName, isPrivilegedHelperTool: isPrivilegedHelperTool))
+        connection.activate()
+        try await connection.sendMessage(request: PingRequest())
+        connection.errorHandler = { connection, error in
+            print(error)
+        }
+
+        toolConnection = connection
+    }
+
+    @discardableResult
+    public func sendToTool<Request: HelperCommunication.Request>(request: Request) async throws -> Request.Response {
+        guard let toolConnection else { throw Error.invalidConnection }
+        return try await toolConnection.sendMessage(request: request)
+    }
+
+    @discardableResult
+    public func sendToServer<Request: HelperCommunication.Request>(request: Request, for info: HelperServerInfo) async throws -> Request.Response {
+        guard let serverConnection = serverConnectionByInfo[info] else { throw Error.invalidConnection }
+        return try await serverConnection.sendMessage(request: request)
+    }
+
+    /// Fetches the version reported by the tool's `MainService`. Throws `Error.invalidConnection` if
+    /// `connectToTool` has not been called yet, or rethrows the underlying `XPCConnection.Error` if
+    /// the tool fails to respond (use `XPCConnection.Error.indicatesOutdatedPeer` to distinguish
+    /// "tool predates version query" from transient XPC failures).
+    public func fetchToolVersion() async throws -> String {
+        guard let toolConnection else { throw Error.invalidConnection }
+        return try await toolConnection.sendMessage(request: FetchVersionRequest()).version
+    }
+}
+#endif

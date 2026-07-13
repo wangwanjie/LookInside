@@ -1,0 +1,154 @@
+// swift-tools-version: 6.1
+// The swift-tools-version declares the minimum version of Swift required to build this package.
+
+import PackageDescription
+
+let package = Package(
+    name: "swift-helper-service",
+    platforms: [.macOS(.v10_15), .macCatalyst(.v13)],
+    products: [
+        .library(
+            name: "HelperCommunication",
+            targets: ["HelperCommunication"]
+        ),
+        .library(
+            name: "HelperService",
+            targets: ["HelperService"]
+        ),
+        .library(
+            name: "HelperClient",
+            targets: ["HelperClient"]
+        ),
+        .library(
+            name: "HelperServer",
+            targets: ["HelperServer"]
+        ),
+        .library(
+            name: "HelperPeer",
+            targets: ["HelperPeer"]
+        ),
+        .library(
+            name: "InjectionService",
+            targets: ["InjectionServiceInterface", "InjectionServiceImplementation"]
+        ),
+        .library(
+            name: "InjectionServiceInterface",
+            targets: ["InjectionServiceInterface"]
+        ),
+        .library(
+            name: "InjectionServiceImplementation",
+            targets: ["InjectionServiceImplementation"]
+        ),
+        .library(
+            name: "FilesService",
+            targets: ["FilesServiceInterface", "FilesServiceImplementation"]
+        ),
+        .library(
+            name: "FilesServiceInterface",
+            targets: ["FilesServiceInterface"]
+        ),
+        .library(
+            name: "FilesServiceImplementation",
+            targets: ["FilesServiceImplementation"]
+        ),
+    ],
+    dependencies: [
+        .package(url: "https://github.com/MxIris-macOS-Library-Forks/SwiftyXPC", from: "0.5.102"),
+        .package(url: "https://github.com/MxIris-Reverse-Engineering/MachInjector", from: "0.3.0"),
+        .package(path: "../FrameworkToolbox"),
+    ],
+    targets: [
+        .target(
+            name: "HelperService",
+            dependencies: [
+                "HelperCommunication",
+                .product(name: "SwiftyXPC", package: "SwiftyXPC"),
+                .product(name: "FoundationToolbox", package: "FrameworkToolbox"),
+            ]
+        ),
+        .target(
+            name: "HelperCommunication",
+            dependencies: [
+                .product(name: "SwiftyXPC", package: "SwiftyXPC"),
+                .product(name: "FoundationToolbox", package: "FrameworkToolbox"),
+            ]
+        ),
+        .target(
+            name: "HelperClient",
+            dependencies: [
+                "HelperService",
+                "HelperCommunication",
+                .product(name: "SwiftyXPC", package: "SwiftyXPC"),
+                .product(name: "FoundationToolbox", package: "FrameworkToolbox"),
+            ]
+        ),
+        .target(
+            name: "HelperServer",
+            dependencies: [
+                "HelperService",
+                "HelperCommunication",
+                "MainService",
+                .product(name: "SwiftyXPC", package: "SwiftyXPC"),
+                .product(name: "FoundationToolbox", package: "FrameworkToolbox"),
+            ]
+        ),
+        .target(
+            name: "HelperPeer",
+            dependencies: [
+                "HelperCommunication",
+                "HelperService",
+                .product(name: "SwiftyXPC", package: "SwiftyXPC"),
+                .product(name: "FoundationToolbox", package: "FrameworkToolbox"),
+            ]
+        ),
+        .target(
+            name: "MainService",
+            dependencies: [
+                "HelperCommunication",
+                "HelperService",
+            ],
+            path: "Sources/HelperServices/MainService"
+        ),
+        .target(
+            name: "InjectionServiceInterface",
+            dependencies: [
+                "HelperCommunication",
+            ],
+            path: "Sources/HelperServices/InjectionService/Interface"
+        ),
+        .target(
+            name: "InjectionServiceImplementation",
+            dependencies: [
+                "InjectionServiceInterface",
+                "HelperCommunication",
+                "HelperService",
+                .product(name: "MachInjector", package: "MachInjector"),
+            ],
+            path: "Sources/HelperServices/InjectionService/Implementation"
+        ),
+        .target(
+            name: "FilesServiceInterface",
+            dependencies: [
+                "HelperCommunication",
+            ],
+            path: "Sources/HelperServices/FilesService/Interface"
+        ),
+        .target(
+            name: "FilesServiceImplementation",
+            dependencies: [
+                "FilesServiceInterface",
+                "HelperService",
+                "HelperCommunication",
+            ],
+            path: "Sources/HelperServices/FilesService/Implementation"
+        ),
+        .testTarget(
+            name: "HelperCommunicationTests",
+            dependencies: [
+                "HelperCommunication",
+                "HelperClient",
+                .product(name: "SwiftyXPC", package: "SwiftyXPC"),
+            ]
+        ),
+    ]
+)

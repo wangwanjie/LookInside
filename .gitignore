@@ -53,3 +53,4 @@ LookInside/DerivedSource/*
 
 # Agent worktrees
 .worktrees/
+LookInsideServer.xcframework

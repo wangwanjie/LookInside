@@ -798,11 +798,11 @@
 			);
 			mainGroup = AA48F29221CC0CA50032EC2C;
 			packageReferences = (
-				E37B8D0B2F97B1B100600001 /* XCRemoteSwiftPackageReference "swift-demangling" */,
+				E37B8D0B2F97B1B100600001 /* XCLocalSwiftPackageReference "LocalPackages/swift-demangling" */,
 				E37B8D0F0F97B1B100600001 /* XCRemoteSwiftPackageReference "Sparkle" */,
 				E37B8D202F97B1B100600001 /* XCRemoteSwiftPackageReference "LookInsidePrivateDiscriminator" */,
-				E97210042FC2D5C0003AAEA6 /* XCRemoteSwiftPackageReference "RunningApplicationKit" */,
-				E97210072FC2E3FC003AAEA6 /* XCRemoteSwiftPackageReference "swift-helper-service" */,
+				E97210042FC2D5C0003AAEA6 /* XCLocalSwiftPackageReference "LocalPackages/RunningApplicationKit" */,
+				E97210072FC2E3FC003AAEA6 /* XCLocalSwiftPackageReference "LocalPackages/swift-helper-service" */,
 				E9FE990A3026C657008692AF /* XCRemoteSwiftPackageReference "UIFoundation" */,
 			);
 			preferredProjectObjectVersion = 50;
@@ -1229,13 +1229,9 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		E37B8D0B2F97B1B100600001 /* XCRemoteSwiftPackageReference "swift-demangling" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/MxIris-Reverse-Engineering/swift-demangling.git";
-			requirement = {
-				kind = exactVersion;
-				version = 0.2.0;
-			};
+		E37B8D0B2F97B1B100600001 /* XCLocalSwiftPackageReference "LocalPackages/swift-demangling" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = "LocalPackages/swift-demangling";
 		};
 		E37B8D0F0F97B1B100600001 /* XCRemoteSwiftPackageReference "Sparkle" */ = {
 			isa = XCRemoteSwiftPackageReference;
@@ -1253,21 +1249,13 @@
 				version = 0.0.2;
 			};
 		};
-		E97210042FC2D5C0003AAEA6 /* XCRemoteSwiftPackageReference "RunningApplicationKit" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/Mx-Iris/RunningApplicationKit";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 0.3.3;
-			};
+		E97210042FC2D5C0003AAEA6 /* XCLocalSwiftPackageReference "LocalPackages/RunningApplicationKit" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = "LocalPackages/RunningApplicationKit";
 		};
-		E97210072FC2E3FC003AAEA6 /* XCRemoteSwiftPackageReference "swift-helper-service" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/Mx-Iris/swift-helper-service";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 0.1.0;
-			};
+		E97210072FC2E3FC003AAEA6 /* XCLocalSwiftPackageReference "LocalPackages/swift-helper-service" */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = "LocalPackages/swift-helper-service";
 		};
 		E9FE990A3026C657008692AF /* XCRemoteSwiftPackageReference "UIFoundation" */ = {
 			isa = XCRemoteSwiftPackageReference;
@@ -1285,7 +1273,7 @@
 /* Begin XCSwiftPackageProductDependency section */
 		E37B8D0C2F97B1B100600001 /* Demangling */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = E37B8D0B2F97B1B100600001 /* XCRemoteSwiftPackageReference "swift-demangling" */;
+			package = E37B8D0B2F97B1B100600001 /* XCLocalSwiftPackageReference "LocalPackages/swift-demangling" */;
 			productName = Demangling;
 		};
 		E37B8D0F1F97B1B100600001 /* Sparkle */ = {
@@ -1300,22 +1288,22 @@
 		};
 		E97210052FC2D5C0003AAEA6 /* RunningApplicationKit */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = E97210042FC2D5C0003AAEA6 /* XCRemoteSwiftPackageReference "RunningApplicationKit" */;
+			package = E97210042FC2D5C0003AAEA6 /* XCLocalSwiftPackageReference "LocalPackages/RunningApplicationKit" */;
 			productName = RunningApplicationKit;
 		};
 		E97210082FC2E5C0003AAEA6 /* HelperClient */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = E97210072FC2E3FC003AAEA6 /* XCRemoteSwiftPackageReference "swift-helper-service" */;
+			package = E97210072FC2E3FC003AAEA6 /* XCLocalSwiftPackageReference "LocalPackages/swift-helper-service" */;
 			productName = HelperClient;
 		};
 		E972100A2FC2E5C0003AAEA6 /* HelperCommunication */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = E97210072FC2E3FC003AAEA6 /* XCRemoteSwiftPackageReference "swift-helper-service" */;
+			package = E97210072FC2E3FC003AAEA6 /* XCLocalSwiftPackageReference "LocalPackages/swift-helper-service" */;
 			productName = HelperCommunication;
 		};
 		E972100C2FC2E5C0003AAEA6 /* InjectionServiceInterface */ = {
 			isa = XCSwiftPackageProductDependency;
-			package = E97210072FC2E3FC003AAEA6 /* XCRemoteSwiftPackageReference "swift-helper-service" */;
+			package = E97210072FC2E3FC003AAEA6 /* XCLocalSwiftPackageReference "LocalPackages/swift-helper-service" */;
 			productName = InjectionServiceInterface;
 		};
 		E9FE990B3026C657008692AF /* UIFoundation */ = {
