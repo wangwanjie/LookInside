@@ -17,5 +17,5 @@ let package = Package(
             name: "RunningApplicationKit"
         ),
     ],
-    swiftLanguageModes: [.v6],
+    swiftLanguageModes: [.v5],
 )

@@ -74,24 +74,6 @@
       }
     },
     {
-      "identity" : "swift-demangling",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/MxIris-Reverse-Engineering/swift-demangling.git",
-      "state" : {
-        "revision" : "94a64877bf8a1d58d11b1bc201726d14c85b80a6",
-        "version" : "0.1.0"
-      }
-    },
-    {
-      "identity" : "swift-helper-service",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/Mx-Iris/swift-helper-service",
-      "state" : {
-        "revision" : "f544d0b4a063b716aeb56a89a661c508c9de34fb",
-        "version" : "0.1.2"
-      }
-    },
-    {
       "identity" : "swift-literal-type-inference",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/p-x9/swift-literal-type-inference.git",
