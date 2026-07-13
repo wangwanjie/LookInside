@@ -515,10 +515,6 @@ archive_app_unsigned() {
 		CODE_SIGNING_ALLOWED=NO
 	)
 
-	if [[ -n "${SPARKLE_PUBLIC_ED_KEY:-}" ]]; then
-		xcodebuild_args+=(SPARKLE_PUBLIC_ED_KEY="$SPARKLE_PUBLIC_ED_KEY")
-	fi
-
 	if [[ -n "$PACKAGE_AUTH_PROVIDER" ]]; then
 		resolve_args+=(-packageAuthorizationProvider "$PACKAGE_AUTH_PROVIDER")
 		xcodebuild_args+=(-packageAuthorizationProvider "$PACKAGE_AUTH_PROVIDER")

@@ -28,7 +28,6 @@
 		79CC3F736CA547232F1827F4 /* LookInsideActivationUI in Frameworks */ = {isa = PBXBuildFile; productRef = F05DCA7C93CF923C02603F72 /* LookInsideActivationUI */; };
 		C0DE5A1E2FA0000100A1B2C3 /* LookInsideHostCore in Frameworks */ = {isa = PBXBuildFile; productRef = C0DE5A1F2FA0000100A1B2C3 /* LookInsideHostCore */; };
 		E37B8D0D2F97B1B100600001 /* Demangling in Frameworks */ = {isa = PBXBuildFile; productRef = E37B8D0C2F97B1B100600001 /* Demangling */; };
-		E37B8D0F2F97B1B100600001 /* Sparkle in Frameworks */ = {isa = PBXBuildFile; productRef = E37B8D0F1F97B1B100600001 /* Sparkle */; };
 		E37B8D222F97B1B100600001 /* LookInsidePrivateDiscriminator in Frameworks */ = {isa = PBXBuildFile; productRef = E37B8D212F97B1B100600001 /* LookInsidePrivateDiscriminator */; };
 		E97210062FC2D5C0003AAEA6 /* RunningApplicationKit in Frameworks */ = {isa = PBXBuildFile; productRef = E97210052FC2D5C0003AAEA6 /* RunningApplicationKit */; };
 		E97210092FC2E5C0003AAEA6 /* HelperClient in Frameworks */ = {isa = PBXBuildFile; productRef = E97210082FC2E5C0003AAEA6 /* HelperClient */; };
@@ -307,7 +306,6 @@
 				50EAE1AB2F71C01A00EBE063 /* Quartz.framework in Frameworks */,
 				50EAE1AC2F71C01A00EBE063 /* QuickLookThumbnailing.framework in Frameworks */,
 				E37B8D0D2F97B1B100600001 /* Demangling in Frameworks */,
-				E37B8D0F2F97B1B100600001 /* Sparkle in Frameworks */,
 				E97210062FC2D5C0003AAEA6 /* RunningApplicationKit in Frameworks */,
 				E37B8D222F97B1B100600001 /* LookInsidePrivateDiscriminator in Frameworks */,
 				E97210092FC2E5C0003AAEA6 /* HelperClient in Frameworks */,
@@ -374,7 +372,6 @@
 			name = LookInside;
 			packageProductDependencies = (
 				E37B8D0C2F97B1B100600001 /* Demangling */,
-				E37B8D0F1F97B1B100600001 /* Sparkle */,
 				E37B8D212F97B1B100600001 /* LookInsidePrivateDiscriminator */,
 				E97210052FC2D5C0003AAEA6 /* RunningApplicationKit */,
 				E97210082FC2E5C0003AAEA6 /* HelperClient */,
@@ -442,7 +439,6 @@
 			mainGroup = AA48F29221CC0CA50032EC2C;
 			packageReferences = (
 				E37B8D0B2F97B1B100600001 /* XCLocalSwiftPackageReference "LocalPackages/swift-demangling" */,
-				E37B8D0F0F97B1B100600001 /* XCRemoteSwiftPackageReference "Sparkle" */,
 				E37B8D202F97B1B100600001 /* XCRemoteSwiftPackageReference "LookInsidePrivateDiscriminator" */,
 				E97210042FC2D5C0003AAEA6 /* XCLocalSwiftPackageReference "LocalPackages/RunningApplicationKit" */,
 				E97210072FC2E3FC003AAEA6 /* XCLocalSwiftPackageReference "LocalPackages/swift-helper-service" */,
@@ -912,14 +908,6 @@
 /* End XCLocalSwiftPackageReference section */
 
 /* Begin XCRemoteSwiftPackageReference section */
-		E37B8D0F0F97B1B100600001 /* XCRemoteSwiftPackageReference "Sparkle" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/sparkle-project/Sparkle";
-			requirement = {
-				kind = exactVersion;
-				version = 2.9.1;
-			};
-		};
 		E37B8D202F97B1B100600001 /* XCRemoteSwiftPackageReference "LookInsidePrivateDiscriminator" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/LookInsideApp/LookInsidePrivateDiscriminator.git";
@@ -965,11 +953,6 @@
 			isa = XCSwiftPackageProductDependency;
 			package = E37B8D0B2F97B1B100600001 /* XCLocalSwiftPackageReference "LocalPackages/swift-demangling" */;
 			productName = Demangling;
-		};
-		E37B8D0F1F97B1B100600001 /* Sparkle */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = E37B8D0F0F97B1B100600001 /* XCRemoteSwiftPackageReference "Sparkle" */;
-			productName = Sparkle;
 		};
 		E37B8D212F97B1B100600001 /* LookInsidePrivateDiscriminator */ = {
 			isa = XCSwiftPackageProductDependency;
