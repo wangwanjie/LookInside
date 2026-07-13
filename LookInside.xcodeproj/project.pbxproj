@@ -18,6 +18,17 @@
 			name = "Build Release DMG";
 			productName = "Build Release DMG";
 		};
+		E9D000072FC4000000010001 /* Build LookInsideServer XCFramework */ = {
+			isa = PBXAggregateTarget;
+			buildConfigurationList = E9D0000A2FC4000000010001 /* Build configuration list for PBXAggregateTarget "Build LookInsideServer XCFramework" */;
+			buildPhases = (
+				E9D000082FC4000000010001 /* Build LookInsideServer XCFramework */,
+			);
+			dependencies = (
+			);
+			name = "Build LookInsideServer XCFramework";
+			productName = "Build LookInsideServer XCFramework";
+		};
 /* End PBXAggregateTarget section */
 
 /* Begin PBXBuildFile section */
@@ -799,6 +810,9 @@
 					E9D000012FC4000000010001 = {
 						CreatedOnToolsVersion = 16.4;
 					};
+					E9D000072FC4000000010001 = {
+						CreatedOnToolsVersion = 16.4;
+					};
 				};
 			};
 			buildConfigurationList = AA48F29621CC0CA50032EC2C /* Build configuration list for PBXProject "LookInside" */;
@@ -824,6 +838,7 @@
 			targets = (
 				AA48F29A21CC0CA50032EC2C /* LookInside */,
 				E9D000012FC4000000010001 /* Build Release DMG */,
+				E9D000072FC4000000010001 /* Build LookInsideServer XCFramework */,
 			);
 		};
 /* End PBXProject section */
@@ -932,6 +947,26 @@
 			runOnlyForDeploymentPostprocessing = 0;
 			shellPath = /bin/bash;
 			shellScript = "bash \"$SRCROOT/Scripts/build-release-dmg.sh\" --allow-missing-injector\n";
+		};
+		E9D000082FC4000000010001 /* Build LookInsideServer XCFramework */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+			);
+			name = "Build LookInsideServer XCFramework";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(SRCROOT)/LookInsideServer.xcframework",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/zsh;
+			shellScript = "zsh \"$SRCROOT/Scripts/build-lookinside-server-xcframework.sh\"\n";
 		};
 /* End PBXShellScriptBuildPhase section */
 
@@ -1255,6 +1290,22 @@
 			};
 			name = Release;
 		};
+		E9D0000B2FC4000000010001 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				PRODUCT_NAME = "Build LookInsideServer XCFramework";
+			};
+			name = Debug;
+		};
+		E9D0000C2FC4000000010001 /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ENABLE_USER_SCRIPT_SANDBOXING = NO;
+				PRODUCT_NAME = "Build LookInsideServer XCFramework";
+			};
+			name = Release;
+		};
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
@@ -1279,6 +1330,15 @@
 			buildConfigurations = (
 				E9D000052FC4000000010001 /* Debug */,
 				E9D000062FC4000000010001 /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
+		E9D0000A2FC4000000010001 /* Build configuration list for PBXAggregateTarget "Build LookInsideServer XCFramework" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				E9D0000B2FC4000000010001 /* Debug */,
+				E9D0000C2FC4000000010001 /* Release */,
 			);
 			defaultConfigurationIsVisible = 0;
 			defaultConfigurationName = Release;
