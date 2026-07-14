@@ -4,11 +4,6 @@ LookInside is a Mac app that lets you click through your iOS or macOS app UI and
 
 ![Preview](./Resources/SCR-20260502-svqx.jpeg)
 
-- Website: [lookinside-app.com](https://lookinside-app.com)
-- Server package: [LookInside-Release](https://github.com/LookInsideApp/LookInside-Release)
-
-LookInside continues the work of [Lookin](https://lookin.work/), the original iOS view debugger.
-
 ## Use it
 
 1. Download LookInside from the [Releases page](https://github.com/LookInsideApp/LookInside/releases). It runs on macOS 14 or later.
@@ -38,7 +33,6 @@ If you activated an earlier version, your activation carries over. The first tim
 ## Add the server package
 
 Use [LookInside-Release](https://github.com/LookInsideApp/LookInside-Release) with Swift Package Manager or CocoaPods.
-
 ## License
 
 GPL-3.0. See [`LICENSE`](LICENSE).
