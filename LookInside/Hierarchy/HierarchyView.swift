@@ -413,6 +413,18 @@ class HierarchyView: BaseView {
         pasteboard.writeObjects([string as NSString])
     }
 
+    @objc fileprivate func handleCopyDisplayItemLocationTree(_ menuItem: NSMenuItem) {
+        guard let item = displayItem(of: menuItem) else { return }
+        let string = LKHierarchyLocationTreeFormatter.locationTree(
+            forDisplayItem: item,
+            titleProvider: { $0.title() },
+            subtitleProvider: { $0.subtitle() }
+        )
+        let pasteboard = NSPasteboard.general
+        pasteboard.clearContents()
+        pasteboard.writeObjects([string as NSString])
+    }
+
     @objc fileprivate func handleExpandRecursively(_ menuItem: NSMenuItem) {
         guard let item = displayItem(of: menuItem) else {
             assertionFailure("the menu item carries no display item")
@@ -521,6 +533,7 @@ extension HierarchyView: NSMenuDelegate {
 
         if !displayItem.isUserCustom() {
             menu.addItem(menuItem(NSLocalizedString("Focus", comment: ""), action: #selector(handleFocusCurrentItem(_:))))
+            menu.addItem(menuItem(NSLocalizedString("Copy View/Layer location", comment: ""), action: #selector(handleCopyDisplayItemLocationTree(_:))))
             if !isReadOnly {
                 menu.addItem(menuItem(NSLocalizedString("Print", comment: ""), action: #selector(handlePrintItem(_:))))
             }
