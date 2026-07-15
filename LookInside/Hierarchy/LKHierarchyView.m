@@ -20,6 +20,7 @@
 #import "LKAppsManager.h"
 #import "LKInspectableApp.h"
 #import "LookinDisplayItem+LookinClient.h"
+#import "LKHierarchyLocationTreeFormatter.h"
 
 static NSString * const kMenuBindKey_RowView = @"view";
 static CGFloat const kRowHeight = 28;
@@ -382,6 +383,16 @@ extern NSString *const LKAppShowConsoleNotificationName;
             item;
         })];
     }];
+    
+    if (!displayItem.isUserCustom) {
+        [menu addItem:({
+            NSMenuItem *item = [NSMenuItem new];
+            item.target = self;
+            item.action = @selector(_handleCopyDisplayItemLocationTree:);
+            item.title = NSLocalizedString(@"Copy View/Layer location", nil);
+            item;
+        })];
+    }
 
     NSArray<LookinDisplayItem *> *backingLayerItems = [self.dataSource swiftUIBackingLayerItemsForItem:displayItem];
     LookinDisplayItem *swiftUISourceItem = [self.dataSource swiftUISourceItemForLayerItem:displayItem];
@@ -561,6 +572,24 @@ extern NSString *const LKAppShowConsoleNotificationName;
 
 - (void)_handleCopyDisplayItemName:(NSMenuItem *)menuItem {
     NSString *stringToCopy = menuItem.representedObject;
+    
+    NSPasteboard *paste = [NSPasteboard generalPasteboard];
+    [paste clearContents];
+    [paste writeObjects:@[stringToCopy]];
+}
+
+- (void)_handleCopyDisplayItemLocationTree:(NSMenuItem *)menuItem {
+    LKHierarchyRowView *view = [menuItem.menu lookin_getBindObjectForKey:kMenuBindKey_RowView];
+    LookinDisplayItem *item = view.displayItem;
+    if (!item) {
+        return;
+    }
+    
+    NSString *stringToCopy = [LKHierarchyLocationTreeFormatter locationTreeForDisplayItem:item titleProvider:^NSString * _Nullable(LookinDisplayItem *treeItem) {
+        return treeItem.title;
+    } subtitleProvider:^NSString * _Nullable(LookinDisplayItem *treeItem) {
+        return treeItem.subtitle;
+    }];
     
     NSPasteboard *paste = [NSPasteboard generalPasteboard];
     [paste clearContents];

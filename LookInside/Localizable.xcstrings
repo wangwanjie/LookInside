@@ -956,6 +956,22 @@
         }
       }
     },
+    "Copy View/Layer location" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Copy View/Layer location"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "复制 View/Layer 所在位置"
+          }
+        }
+      }
+    },
     "Current LookInside app is too old to open this document. Current LookInside app version is %@, but the document version is %@." : {
       "localizations" : {
         "en" : {
