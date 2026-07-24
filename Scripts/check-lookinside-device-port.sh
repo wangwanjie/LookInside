@@ -28,12 +28,14 @@ die() {
 }
 
 cleanup() {
-    for probe_pid in "${probe_pids[@]}"; do
-        if kill -0 "$probe_pid" 2>/dev/null; then
-            kill "$probe_pid" 2>/dev/null || true
-            wait "$probe_pid" 2>/dev/null || true
-        fi
-    done
+    if [ "${#probe_pids[@]}" -gt 0 ]; then
+        for probe_pid in "${probe_pids[@]}"; do
+            if kill -0 "$probe_pid" 2>/dev/null; then
+                kill "$probe_pid" 2>/dev/null || true
+                wait "$probe_pid" 2>/dev/null || true
+            fi
+        done
+    fi
     if [ -n "$iproxy_pid" ] && kill -0 "$iproxy_pid" 2>/dev/null; then
         kill "$iproxy_pid" 2>/dev/null || true
         wait "$iproxy_pid" 2>/dev/null || true
