@@ -128,6 +128,10 @@ test_no_device() {
     run_script no-device
     assert_status 1 "$RUN_STATUS" "no USB device fails"
     assert_contains "$RUN_OUTPUT" "No USB iOS device" "no USB device explains failure"
+    case "$RUN_OUTPUT" in
+        *"unbound variable"*) fail "no USB device does not trigger cleanup error" ;;
+        *) pass "no USB device does not trigger cleanup error" ;;
+    esac
 }
 
 test_multiple_devices_require_udid() {
