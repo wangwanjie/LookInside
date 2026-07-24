@@ -71,7 +71,7 @@ if [ -n "${FAKE_IPROXY_PID_FILE:-}" ]; then
 fi
 trap 'exit 0' INT TERM
 while :; do
-    /bin/sleep 1
+    /bin/sleep 0.1
 done
 EOF
 
@@ -107,7 +107,7 @@ run_script() {
     PATH="$fake_bin:/usr/bin:/bin" \
         LOOKINSIDE_IPROXY_STARTUP_SECONDS=0.01 \
         LOOKINSIDE_PROBE_SETTLE_SECONDS=0.05 \
-        LOOKINSIDE_PROBE_HOLD_SECONDS=1 \
+        LOOKINSIDE_PROBE_HOLD_SECONDS=0.2 \
         "$SCRIPT_PATH" "$@" >"$output_file" 2>&1
     RUN_STATUS=$?
     set -e
@@ -146,10 +146,110 @@ test_unknown_udid() {
     assert_contains "$RUN_OUTPUT" "device-b" "unknown UDID is reported"
 }
 
+test_single_open_port() {
+    FAKE_DEVICE_IDS="$(printf 'device-a\n')"
+    FAKE_OPEN_LOCAL_PORT="58175"
+    FAKE_IPROXY_PID_FILE="$TEST_TMP_ROOT/single-open-iproxy.pid"
+    export FAKE_DEVICE_IDS FAKE_OPEN_LOCAL_PORT FAKE_IPROXY_PID_FILE
+    run_script single-open
+    assert_status 0 "$RUN_STATUS" "one open LookinServer port succeeds"
+    assert_contains "$RUN_OUTPUT" "47175 OPEN" "open port is reported"
+    assert_contains "$RUN_OUTPUT" "47176 CLOSED" "closed port is reported"
+}
+
+test_all_ports_closed() {
+    FAKE_DEVICE_IDS="$(printf 'device-a\n')"
+    FAKE_OPEN_LOCAL_PORT=""
+    FAKE_IPROXY_PID_FILE="$TEST_TMP_ROOT/all-closed-iproxy.pid"
+    export FAKE_DEVICE_IDS FAKE_OPEN_LOCAL_PORT FAKE_IPROXY_PID_FILE
+    run_script all-closed
+    assert_status 1 "$RUN_STATUS" "all closed LookinServer ports fail"
+    assert_contains "$RUN_OUTPUT" "No LookinServer port accepted" "all closed ports explain failure"
+}
+
+test_explicit_udid_succeeds() {
+    FAKE_DEVICE_IDS="$(printf 'device-a\ndevice-b\n')"
+    FAKE_OPEN_LOCAL_PORT="58177"
+    FAKE_IPROXY_PID_FILE="$TEST_TMP_ROOT/explicit-udid-iproxy.pid"
+    export FAKE_DEVICE_IDS FAKE_OPEN_LOCAL_PORT FAKE_IPROXY_PID_FILE
+    run_script explicit-udid --udid device-b
+    assert_status 0 "$RUN_STATUS" "explicit UDID selects among multiple devices"
+    assert_contains "$RUN_OUTPUT" "Selected USB device: device-b" "selected UDID is printed"
+    assert_contains "$RUN_OUTPUT" "47177 OPEN" "non-first open port is supported"
+}
+
+test_coredevice_failure_is_warning() {
+    FAKE_DEVICE_IDS="$(printf 'device-a\n')"
+    FAKE_COREDEVICE_STATUS=1
+    FAKE_OPEN_LOCAL_PORT="58175"
+    FAKE_IPROXY_PID_FILE="$TEST_TMP_ROOT/coredevice-warning-iproxy.pid"
+    export FAKE_DEVICE_IDS FAKE_COREDEVICE_STATUS FAKE_OPEN_LOCAL_PORT FAKE_IPROXY_PID_FILE
+    run_script coredevice-warning
+    assert_status 0 "$RUN_STATUS" "CoreDevice failure does not override usbmux"
+    assert_contains "$RUN_OUTPUT" "WARNING: CoreDevice query failed" "CoreDevice failure is reported"
+    unset FAKE_COREDEVICE_STATUS
+}
+
+test_busy_local_port_fails_without_killing_owner() {
+    FAKE_DEVICE_IDS="$(printf 'device-a\n')"
+    FAKE_BUSY_LOCAL_PORTS="58176"
+    FAKE_OPEN_LOCAL_PORT="58175"
+    export FAKE_DEVICE_IDS FAKE_BUSY_LOCAL_PORTS FAKE_OPEN_LOCAL_PORT
+    run_script busy-local-port
+    assert_status 1 "$RUN_STATUS" "busy local port fails before forwarding"
+    assert_contains "$RUN_OUTPUT" "58176" "busy local port is identified"
+    unset FAKE_BUSY_LOCAL_PORTS
+}
+
+test_iproxy_is_cleaned_up() {
+    FAKE_DEVICE_IDS="$(printf 'device-a\n')"
+    FAKE_OPEN_LOCAL_PORT="58175"
+    FAKE_IPROXY_PID_FILE="$TEST_TMP_ROOT/cleanup-iproxy.pid"
+    export FAKE_DEVICE_IDS FAKE_OPEN_LOCAL_PORT FAKE_IPROXY_PID_FILE
+    run_script cleanup
+    if [ ! -s "$FAKE_IPROXY_PID_FILE" ]; then
+        fail "iproxy process is started for cleanup test"
+        return
+    fi
+    iproxy_pid="$(cat "$FAKE_IPROXY_PID_FILE")"
+    if kill -0 "$iproxy_pid" 2>/dev/null; then
+        fail "iproxy process is cleaned up"
+        kill "$iproxy_pid" 2>/dev/null || true
+    else
+        pass "iproxy process is cleaned up"
+    fi
+}
+
+test_iproxy_is_cleaned_up_after_failure() {
+    FAKE_DEVICE_IDS="$(printf 'device-a\n')"
+    FAKE_OPEN_LOCAL_PORT=""
+    FAKE_IPROXY_PID_FILE="$TEST_TMP_ROOT/failure-cleanup-iproxy.pid"
+    export FAKE_DEVICE_IDS FAKE_OPEN_LOCAL_PORT FAKE_IPROXY_PID_FILE
+    run_script failure-cleanup
+    if [ ! -s "$FAKE_IPROXY_PID_FILE" ]; then
+        fail "iproxy process is started for failure cleanup test"
+        return
+    fi
+    iproxy_pid="$(cat "$FAKE_IPROXY_PID_FILE")"
+    if kill -0 "$iproxy_pid" 2>/dev/null; then
+        fail "iproxy process is cleaned up after failure"
+        kill "$iproxy_pid" 2>/dev/null || true
+    else
+        pass "iproxy process is cleaned up after failure"
+    fi
+}
+
 test_help
 test_no_device
 test_multiple_devices_require_udid
 test_unknown_udid
+test_single_open_port
+test_all_ports_closed
+test_explicit_udid_succeeds
+test_coredevice_failure_is_warning
+test_busy_local_port_fails_without_killing_owner
+test_iproxy_is_cleaned_up
+test_iproxy_is_cleaned_up_after_failure
 
 printf '\n%d passed, %d failed\n' "$PASS_COUNT" "$FAIL_COUNT"
 [ "$FAIL_COUNT" -eq 0 ]
