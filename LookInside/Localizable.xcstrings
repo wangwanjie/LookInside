@@ -7513,6 +7513,22 @@
         }
       }
     },
+    "Copy Code" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Copy Code"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "复制代码"
+          }
+        }
+      }
+    },
     "Copy Object ID" : {
       "localizations" : {
         "en" : {
@@ -8202,6 +8218,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "目前處於聚焦模式"
+          }
+        }
+      }
+    },
+    "Custom Properties" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Custom Properties"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "自定义属性"
           }
         }
       }
@@ -16430,6 +16462,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "影像品質："
+          }
+        }
+      }
+    },
+    "Implement this method in a UIView or CALayer subclass, then reload the hierarchy." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Implement this method in a UIView or CALayer subclass, then reload the hierarchy."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "在 UIView 或 CALayer 子类中实现此方法，然后重新加载层级。"
           }
         }
       }
@@ -35239,6 +35287,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "尚未安裝 swift-pd-guess"
+          }
+        }
+      }
+    },
+    "Supported types: string, number, bool, color, rect, size, point, insets, shadow, enum, json." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Supported types: string, number, bool, color, rect, size, point, insets, shadow, enum, json."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "支持类型：string、number、bool、color、rect、size、point、insets、shadow、enum、json。"
           }
         }
       }

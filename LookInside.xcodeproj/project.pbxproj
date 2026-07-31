@@ -275,6 +275,7 @@
 				Dashboard/AttributeView/LKDashboardAttributeTextView.m,
 				Dashboard/AttributeView/LKDashboardAttributeView.m,
 				Dashboard/AttributeView/LKDashboardTextControlEditingFlag.m,
+				Dashboard/LKCustomPropertyGuideWindowController.swift,
 				Dashboard/LKDashboardAccessoryWindowController.m,
 				Dashboard/LKDashboardCardTitleControl.m,
 				Dashboard/LKDashboardCardView.m,

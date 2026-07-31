@@ -351,6 +351,10 @@ final class DashboardViewController: BaseViewController, DashboardCardViewDelega
 
     // MARK: - DashboardHeaderViewDelegate
 
+    func dashboardHeaderViewDidRequestCustomPropertiesGuide(_: DashboardHeaderView) {
+        LKCustomPropertyGuideWindowController.showGuideWindow()
+    }
+
     func dashboardHeaderView(_: DashboardHeaderView, didInputString string: String) {
         guard string.count >= 3 else {
             searchContainerView.isHidden = true
