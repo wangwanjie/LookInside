@@ -5,6 +5,7 @@ final class LKDashboardObjectIDView: NSView {
     @objc(preferredHeight) class var preferredHeight: CGFloat { 34 }
 
     @objc private(set) var objectIdentifier: String?
+    var isShowingCopyFeedback: Bool { !feedbackLabel.isHidden }
 
     private let backgroundView = NSVisualEffectView()
     private let titleLabel = NSTextField(labelWithString: NSLocalizedString("Object ID", comment: ""))
@@ -98,16 +99,24 @@ final class LKDashboardObjectIDView: NSView {
         valueLabel.toolTip = validIdentifier
         copyButton.isEnabled = validIdentifier != nil
         isHidden = validIdentifier == nil
-        feedbackLabel.isHidden = true
+        resetCopyFeedback()
     }
 
     @discardableResult
     func copy(to pasteboard: NSPasteboard) -> Bool {
+        copy { objectIdentifier in
+            pasteboard.clearContents()
+            return pasteboard.setString(objectIdentifier, forType: .string)
+        }
+    }
+
+    @discardableResult
+    func copy(using writer: (String) -> Bool) -> Bool {
+        resetCopyFeedback()
         guard let objectIdentifier, !objectIdentifier.isEmpty else {
             return false
         }
-        pasteboard.clearContents()
-        guard pasteboard.setString(objectIdentifier, forType: .string) else {
+        guard writer(objectIdentifier) else {
             return false
         }
         showCopiedFeedback()
@@ -119,12 +128,17 @@ final class LKDashboardObjectIDView: NSView {
     }
 
     private func showCopiedFeedback() {
-        hideFeedbackWorkItem?.cancel()
         feedbackLabel.isHidden = false
         let workItem = DispatchWorkItem { [weak self] in
             self?.feedbackLabel.isHidden = true
         }
         hideFeedbackWorkItem = workItem
         DispatchQueue.main.asyncAfter(deadline: .now() + 1, execute: workItem)
+    }
+
+    private func resetCopyFeedback() {
+        hideFeedbackWorkItem?.cancel()
+        hideFeedbackWorkItem = nil
+        feedbackLabel.isHidden = true
     }
 }

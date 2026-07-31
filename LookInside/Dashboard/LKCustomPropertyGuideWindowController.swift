@@ -29,10 +29,19 @@ final class LKCustomPropertyGuideWindowController: NSWindowController {
     }
     """
 
+    static var fieldExplanation: String {
+        NSLocalizedString(
+            "Fields: title names the property, section groups it, valueType selects the editor, value is the current value, and retainedSetter makes it editable. Omit retainedSetter for a read-only property.",
+            comment: ""
+        )
+    }
+
     private static let sharedController = LKCustomPropertyGuideWindowController()
+    static var guideWindow: NSWindow? { sharedController.window }
 
     @objc(showGuideWindow)
     static func showGuideWindow() {
+        (sharedController.contentViewController as? LKCustomPropertyGuideContentViewController)?.resetCopyFeedback()
         sharedController.showWindow(nil)
         sharedController.window?.makeKeyAndOrderFront(nil)
         NSApp.activate(ignoringOtherApps: true)
@@ -88,6 +97,9 @@ private final class LKCustomPropertyGuideContentViewController: NSViewController
             comment: ""
         ))
         supportedLabel.textColor = .secondaryLabelColor
+        let fieldLabel = wrappingLabel(LKCustomPropertyGuideWindowController.fieldExplanation)
+        fieldLabel.identifier = NSUserInterfaceItemIdentifier("lookinside.custom-property-guide.fields")
+        fieldLabel.textColor = .secondaryLabelColor
 
         let codeTextView = NSTextView(frame: .zero)
         codeTextView.string = LKCustomPropertyGuideWindowController.exampleCode
@@ -127,6 +139,7 @@ private final class LKCustomPropertyGuideContentViewController: NSViewController
             titleLabel,
             introLabel,
             supportedLabel,
+            fieldLabel,
             codeScrollView,
             feedbackLabel,
             copyButton,
@@ -150,9 +163,13 @@ private final class LKCustomPropertyGuideContentViewController: NSViewController
             supportedLabel.trailingAnchor.constraint(equalTo: introLabel.trailingAnchor),
             supportedLabel.topAnchor.constraint(equalTo: introLabel.bottomAnchor, constant: 6),
 
+            fieldLabel.leadingAnchor.constraint(equalTo: titleLabel.leadingAnchor),
+            fieldLabel.trailingAnchor.constraint(equalTo: introLabel.trailingAnchor),
+            fieldLabel.topAnchor.constraint(equalTo: supportedLabel.bottomAnchor, constant: 6),
+
             codeScrollView.leadingAnchor.constraint(equalTo: titleLabel.leadingAnchor),
             codeScrollView.trailingAnchor.constraint(equalTo: introLabel.trailingAnchor),
-            codeScrollView.topAnchor.constraint(equalTo: supportedLabel.bottomAnchor, constant: 14),
+            codeScrollView.topAnchor.constraint(equalTo: fieldLabel.bottomAnchor, constant: 14),
             codeScrollView.bottomAnchor.constraint(equalTo: copyButton.topAnchor, constant: -16),
 
             doneButton.trailingAnchor.constraint(equalTo: view.trailingAnchor, constant: -24),
@@ -176,6 +193,7 @@ private final class LKCustomPropertyGuideContentViewController: NSViewController
     }
 
     @objc private func copyCode() {
+        resetCopyFeedback()
         guard LKCustomPropertyGuideWindowController.copyExampleCode(to: .general) else {
             return
         }
@@ -194,5 +212,14 @@ private final class LKCustomPropertyGuideContentViewController: NSViewController
 
     @objc private func closeGuide() {
         view.window?.close()
+    }
+
+    fileprivate func resetCopyFeedback() {
+        NSObject.cancelPreviousPerformRequests(
+            withTarget: self,
+            selector: #selector(hideFeedback),
+            object: nil
+        )
+        feedbackLabel.isHidden = true
     }
 }

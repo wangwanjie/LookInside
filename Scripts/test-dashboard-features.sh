@@ -27,3 +27,9 @@ xcrun swiftc -parse-as-library -framework AppKit \
     "$script_root/Tests/Dashboard/LKCustomPropertyGuideTests.swift" \
     -o "$dashboard_test_tmp/custom-property-guide-tests"
 "$dashboard_test_tmp/custom-property-guide-tests"
+
+xcrun swiftc -parse-as-library \
+    -module-cache-path "$dashboard_test_tmp/module-cache" \
+    "$script_root/Tests/Dashboard/LKDashboardObjectIDWiringTests.swift" \
+    -o "$dashboard_test_tmp/dashboard-wiring-tests"
+"$dashboard_test_tmp/dashboard-wiring-tests" "$script_root"

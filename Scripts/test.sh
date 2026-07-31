@@ -17,7 +17,7 @@ mkdir -p \
 
 format_output() {
 	if command -v xcbeautify >/dev/null 2>&1; then
-		xcbeautify --disable-logging
+		xcbeautify
 	else
 		cat
 	fi
