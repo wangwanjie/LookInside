@@ -43,12 +43,18 @@ enum LKDashboardObjectIDWiringTests {
             return
         }
         require(objectRow.lowerBound < cardLoop.lowerBound, "Object ID row must be laid out before Class and all cards")
+        require(dashboard.contains("[self.cardContainerView addSubview:self.objectIDView]"), "Object ID row must live inside the card container")
 
         let reload = section(dashboard, from: "- (void)reloadWithGroupList:", to: "- (void)reloadCurrentDisplayItem")
         require(reload.contains("self.staticDataSource.selectedItem"), "live/static selection must drive Object ID")
         require(!reload.contains("self.readDataSource.selectedItem"), "archive/read selection must not expose MCP Object ID")
         require(reload.contains("objectIdentifierForDisplayItem:selectedItem"), "Dashboard must call shared formatter")
         require(reload.contains("renderWithObjectIdentifier:objectIdentifier"), "selection reload must refresh the row")
+        require(dashboard.contains("RACObserve(self.staticDataSource, selectedItem)"), "selection changes must drive Dashboard reload")
+
+        let searchToggle = section(dashboard, from: "- (void)dashboardHeaderView:(LKDashboardHeaderView *)view didToggleActive:", to: "#pragma mark - <LKDashboardSearchMethodsViewDelegate>")
+        require(searchToggle.contains("self.cardContainerView.animator.hidden = YES"), "search activation must hide the Object ID container")
+        require(searchToggle.contains("self.cardContainerView.animator.hidden = NO"), "search dismissal must restore the Object ID container")
 
         require(lookup.contains("LKMCPObjectIdentifierFormatter.objectIdentifier(for: item)"), "MCP must call shared formatter")
         require(!lookup.contains("String(format: \"0x%lx\""), "MCP lookup must not duplicate hex formatting")

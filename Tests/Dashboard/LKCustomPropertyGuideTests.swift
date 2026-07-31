@@ -22,13 +22,16 @@ enum LKCustomPropertyGuideTests {
         require(code.contains("weakSelf"), "editable example must avoid retaining the inspected view")
 
         let fieldExplanation = LKCustomPropertyGuideWindowController.fieldExplanation
-        ["title", "section", "valueType", "value", "retainedSetter", "read-only", "editable"].forEach {
+        ["Top-level title", "property", "section", "valueType", "value", "retainedSetter", "shadow", "json", "read-only", "editable"].forEach {
             require(fieldExplanation.contains($0), "field explanation must contain \($0)")
         }
 
-        let pasteboard = NSPasteboard.withUniqueName()
-        require(LKCustomPropertyGuideWindowController.copyExampleCode(to: pasteboard), "example code must copy")
-        require(pasteboard.string(forType: .string) == code, "pasteboard must receive the complete example")
+        var copiedCode: String?
+        require(LKCustomPropertyGuideWindowController.copyExampleCode(using: {
+            copiedCode = $0
+            return true
+        }), "example code must copy")
+        require(copiedCode == code, "writer must receive the complete example")
 
         LKCustomPropertyGuideWindowController.showGuideWindow()
         guard let firstWindow = LKCustomPropertyGuideWindowController.guideWindow,
@@ -44,6 +47,11 @@ enum LKCustomPropertyGuideTests {
         require(fieldLabel?.stringValue == fieldExplanation, "field explanation must be rendered in the window")
         require(allViews.contains { ($0 as? NSTextView)?.string == code }, "complete example must be rendered")
         require(allViews.contains { ($0 as? NSButton)?.identifier?.rawValue == "lookinside.custom-property-guide.copy" }, "copy button must be rendered")
+
+        require(LKCustomPropertyGuideWindowController.copyFromGuide(using: { _ in true }), "guide copy action must report success")
+        require(LKCustomPropertyGuideWindowController.isShowingCopyFeedback, "successful guide copy must show feedback")
+        require(!LKCustomPropertyGuideWindowController.copyFromGuide(using: { _ in false }), "failed guide writer must report failure")
+        require(!LKCustomPropertyGuideWindowController.isShowingCopyFeedback, "failed guide copy must clear stale success feedback")
 
         LKCustomPropertyGuideWindowController.showGuideWindow()
         require(LKCustomPropertyGuideWindowController.guideWindow === firstWindow, "repeated opens must reuse one window")
