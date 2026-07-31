@@ -76,8 +76,7 @@ enum MCPBridgeLiveDocumentLookup {
     /// Stays in sync with the form returned by `hierarchy.read` so
     /// callers can round-trip identifiers across bridge methods.
     static func objectIdentifierString(for item: DisplayItem) -> String {
-        let oid = item.displayingObject()?.oid ?? 0
-        return String(format: "0x%lx", oid)
+        LKMCPObjectIdentifierFormatter.objectIdentifier(for: item) ?? "0x0"
     }
 
     /// The item's rectangle in the root coordinate space.
