@@ -163,6 +163,7 @@
 				Dashboard/LKDashboardAccessoryWindowController.m,
 				Dashboard/LKDashboardCardTitleControl.m,
 				Dashboard/LKDashboardCardView.m,
+				Dashboard/LKDashboardObjectIDView.swift,
 				Dashboard/LKDashboardSectionView.m,
 				Dashboard/LKDashboardSectionViewPool.m,
 				Dashboard/LKDashboardViewController.m,

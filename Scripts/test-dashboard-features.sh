@@ -13,3 +13,10 @@ xcrun swiftc -parse-as-library \
     "$script_root/Tests/Dashboard/LKMCPObjectIdentifierFormatterTests.swift" \
     -o "$dashboard_test_tmp/object-id-formatter-tests"
 "$dashboard_test_tmp/object-id-formatter-tests"
+
+xcrun swiftc -parse-as-library -framework AppKit \
+    -module-cache-path "$dashboard_test_tmp/module-cache" \
+    "$script_root/LookInside/Dashboard/LKDashboardObjectIDView.swift" \
+    "$script_root/Tests/Dashboard/LKDashboardObjectIDViewTests.swift" \
+    -o "$dashboard_test_tmp/object-id-view-tests"
+"$dashboard_test_tmp/object-id-view-tests"

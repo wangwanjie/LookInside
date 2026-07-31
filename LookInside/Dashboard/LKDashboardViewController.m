@@ -32,6 +32,7 @@
 @property(nonatomic, strong) NSScrollView *scrollView;
 @property(nonatomic, strong) LKBaseView *documentView;
 @property(nonatomic, strong) LKBaseView *cardContainerView;
+@property(nonatomic, strong) LKDashboardObjectIDView *objectIDView;
 
 @property(nonatomic, copy) NSArray<LookinAttributesGroup *> *groupList;
 /// key 是 group.uniqueKey
@@ -88,6 +89,9 @@
     
     self.cardContainerView = [LKBaseView new];
     [self.documentView addSubview:self.cardContainerView];
+
+    self.objectIDView = [LKDashboardObjectIDView new];
+    [self.cardContainerView addSubview:self.objectIDView];
     
     self.searchContainerView = [LKBaseView new];
     self.searchContainerView.hidden = YES;
@@ -154,6 +158,11 @@
         
         __block CGFloat y = 0;
 
+        if (!self.objectIDView.hidden) {
+            $(self.objectIDView).width(contentWidth).y(y).height([LKDashboardObjectIDView preferredHeight]);
+            y = self.objectIDView.$maxY + verMargin;
+        }
+
         [self.groupList enumerateObjectsUsingBlock:^(LookinAttributesGroup * _Nonnull group, NSUInteger idx, BOOL * _Nonnull stop) {
             LKDashboardCardView *view = self.cardViews[group.uniqueKey];
             if (view && !view.hidden) {
@@ -200,6 +209,12 @@
 
 - (void)reloadWithGroupList:(NSArray<LookinAttributesGroup *> *)list {
     self.groupList = list;
+
+    LookinDisplayItem *selectedItem = self.staticDataSource.selectedItem;
+    NSString *objectIdentifier = selectedItem
+        ? [LKMCPObjectIdentifierFormatter objectIdentifierForDisplayItem:selectedItem]
+        : nil;
+    [self.objectIDView renderWithObjectIdentifier:objectIdentifier];
 
     if (list.count > 0) {
         self.scrollView.hidden = NO;
