@@ -1824,6 +1824,22 @@
         }
       }
     },
+    "Fields: title names the property, section groups it, valueType selects the editor, value is the current value, and retainedSetter makes it editable. Omit retainedSetter for a read-only property." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Fields: title names the property, section groups it, valueType selects the editor, value is the current value, and retainedSetter makes it editable. Omit retainedSetter for a read-only property."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "字段说明：title 是属性名称，section 用于分组，valueType 决定编辑器，value 是当前值，retainedSetter 使其可编辑；省略 retainedSetter 时属性为只读。"
+          }
+        }
+      }
+    },
     "File Size" : {
       "localizations" : {
         "en" : {

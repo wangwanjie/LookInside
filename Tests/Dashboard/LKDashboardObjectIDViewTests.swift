@@ -23,6 +23,9 @@ enum LKDashboardObjectIDViewTests {
         let pasteboard = NSPasteboard.withUniqueName()
         require(view.copy(to: pasteboard), "valid Object ID must copy")
         require(pasteboard.string(forType: .string) == "0x1234", "pasteboard must receive the exact MCP value")
+        require(view.isShowingCopyFeedback, "successful copy must show feedback")
+        require(!view.copy(using: { _ in false }), "failed writer must report failure")
+        require(!view.isShowingCopyFeedback, "failed copy must clear stale success feedback")
         print("LKDashboardObjectIDViewTests passed")
     }
 }
