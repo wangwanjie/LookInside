@@ -1824,18 +1824,18 @@
         }
       }
     },
-    "Fields: title names the property, section groups it, valueType selects the editor, value is the current value, and retainedSetter makes it editable. Omit retainedSetter for a read-only property." : {
+    "Top-level title overrides the inspected object's display name. In each property, title names the row, section groups it, valueType selects its renderer or editor, and value is the current value. retainedSetter makes string, number, bool, color, rect, size, point, insets, and enum values editable; omit it for read-only values. shadow and json are read-only." : {
       "localizations" : {
         "en" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "Fields: title names the property, section groups it, valueType selects the editor, value is the current value, and retainedSetter makes it editable. Omit retainedSetter for a read-only property."
+            "value" : "Top-level title overrides the inspected object's display name. In each property, title names the row, section groups it, valueType selects its renderer or editor, and value is the current value. retainedSetter makes string, number, bool, color, rect, size, point, insets, and enum values editable; omit it for read-only values. shadow and json are read-only."
           }
         },
         "zh-Hans" : {
           "stringUnit" : {
             "state" : "translated",
-            "value" : "字段说明：title 是属性名称，section 用于分组，valueType 决定编辑器，value 是当前值，retainedSetter 使其可编辑；省略 retainedSetter 时属性为只读。"
+            "value" : "顶层 title 会覆盖被检查对象的显示名称。每个属性中的 title 是行标题，section 用于分组，valueType 决定渲染器或编辑器，value 是当前值。string、number、bool、color、rect、size、point、insets 和 enum 可通过 retainedSetter 编辑；省略时为只读。shadow 和 json 仅支持只读。"
           }
         }
       }

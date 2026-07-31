@@ -31,13 +31,16 @@ final class LKCustomPropertyGuideWindowController: NSWindowController {
 
     static var fieldExplanation: String {
         NSLocalizedString(
-            "Fields: title names the property, section groups it, valueType selects the editor, value is the current value, and retainedSetter makes it editable. Omit retainedSetter for a read-only property.",
+            "Top-level title overrides the inspected object's display name. In each property, title names the row, section groups it, valueType selects its renderer or editor, and value is the current value. retainedSetter makes string, number, bool, color, rect, size, point, insets, and enum values editable; omit it for read-only values. shadow and json are read-only.",
             comment: ""
         )
     }
 
     private static let sharedController = LKCustomPropertyGuideWindowController()
     static var guideWindow: NSWindow? { sharedController.window }
+    static var isShowingCopyFeedback: Bool {
+        (sharedController.contentViewController as? LKCustomPropertyGuideContentViewController)?.isShowingCopyFeedback ?? false
+    }
 
     @objc(showGuideWindow)
     static func showGuideWindow() {
@@ -50,7 +53,20 @@ final class LKCustomPropertyGuideWindowController: NSWindowController {
     @discardableResult
     static func copyExampleCode(to pasteboard: NSPasteboard) -> Bool {
         pasteboard.clearContents()
-        return pasteboard.setString(exampleCode, forType: .string)
+        return copyExampleCode { pasteboard.setString($0, forType: .string) }
+    }
+
+    @discardableResult
+    static func copyExampleCode(using writer: (String) -> Bool) -> Bool {
+        writer(exampleCode)
+    }
+
+    @discardableResult
+    static func copyFromGuide(using writer: (String) -> Bool) -> Bool {
+        guard let controller = sharedController.contentViewController as? LKCustomPropertyGuideContentViewController else {
+            return false
+        }
+        return controller.performCopy(using: writer)
     }
 
     private init() {
@@ -77,6 +93,7 @@ final class LKCustomPropertyGuideWindowController: NSWindowController {
 
 private final class LKCustomPropertyGuideContentViewController: NSViewController {
     private let feedbackLabel = NSTextField(labelWithString: NSLocalizedString("Copied", comment: ""))
+    fileprivate var isShowingCopyFeedback: Bool { !feedbackLabel.isHidden }
 
     override func loadView() {
         view = NSView(frame: NSRect(x: 0, y: 0, width: 700, height: 620))
@@ -193,9 +210,18 @@ private final class LKCustomPropertyGuideContentViewController: NSViewController
     }
 
     @objc private func copyCode() {
+        let pasteboard = NSPasteboard.general
+        _ = performCopy { code in
+            pasteboard.clearContents()
+            return pasteboard.setString(code, forType: .string)
+        }
+    }
+
+    @discardableResult
+    fileprivate func performCopy(using writer: (String) -> Bool) -> Bool {
         resetCopyFeedback()
-        guard LKCustomPropertyGuideWindowController.copyExampleCode(to: .general) else {
-            return
+        guard LKCustomPropertyGuideWindowController.copyExampleCode(using: writer) else {
+            return false
         }
         feedbackLabel.isHidden = false
         NSObject.cancelPreviousPerformRequests(
@@ -204,6 +230,7 @@ private final class LKCustomPropertyGuideContentViewController: NSViewController
             object: nil
         )
         perform(#selector(hideFeedback), with: nil, afterDelay: 1)
+        return true
     }
 
     @objc private func hideFeedback() {
