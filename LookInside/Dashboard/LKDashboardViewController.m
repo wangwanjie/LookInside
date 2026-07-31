@@ -404,6 +404,10 @@
 
 #pragma mark - <LKDashboardHeaderViewDelegate>
 
+- (void)dashboardHeaderViewDidRequestCustomPropertiesGuide:(LKDashboardHeaderView *)view {
+    [LKCustomPropertyGuideWindowController showGuideWindow];
+}
+
 - (void)dashboardHeaderView:(LKDashboardHeaderView *)view didInputString:(NSString *)searchString {
     if (searchString.length < 3) {
         self.searchContainerView.hidden = YES;

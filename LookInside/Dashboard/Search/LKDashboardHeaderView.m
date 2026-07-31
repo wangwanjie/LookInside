@@ -7,8 +7,6 @@
 //
 
 #import "LKDashboardHeaderView.h"
-#import "LKHelper.h"
-#import "LKPreferenceManager.h"
 
 @interface LKDashboardHeaderView () <NSTextFieldDelegate>
 
@@ -149,7 +147,9 @@
 }
 
 - (void)handleAddCustomAttr {
-    [LKHelper showDisabledExternalLinkAlertWithMessage:NSLocalizedString(@"Legacy custom property guides are disabled in this community build. See the repository README instead.", nil)];
+    if ([self.delegate respondsToSelector:@selector(dashboardHeaderViewDidRequestCustomPropertiesGuide:)]) {
+        [self.delegate dashboardHeaderViewDidRequestCustomPropertiesGuide:self];
+    }
 }
 
 #pragma mark - <NSTextFieldDelegate>

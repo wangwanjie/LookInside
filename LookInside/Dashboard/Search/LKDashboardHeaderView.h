@@ -16,6 +16,8 @@
 
 - (void)dashboardHeaderView:(LKDashboardHeaderView *)view didInputString:(NSString *)string;
 
+- (void)dashboardHeaderViewDidRequestCustomPropertiesGuide:(LKDashboardHeaderView *)view;
+
 @end
 
 @interface LKDashboardHeaderView : LKBaseView
