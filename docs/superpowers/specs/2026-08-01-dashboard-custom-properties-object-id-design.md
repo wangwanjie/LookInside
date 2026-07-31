@@ -57,10 +57,11 @@ String(format: "0x%lx", oid)
 
 `displayingObject` 的选择顺序为 `windowObject`、`viewObject`、`layerObject`。UI 必须严格沿用该规则，不能使用选择顺序不同的 `bestObjectOidPreferView:`，也不能使用对象内存地址。
 
-在客户端的 `LookinDisplayItem` 分类中增加共享格式化接口：
+新增可供 Objective-C 与 Swift 同时调用的共享格式化器：
 
-```objc
-- (nullable NSString *)lk_mcpObjectIdentifier;
+```swift
+@objc(objectIdentifierForDisplayItem:)
+static func objectIdentifier(for item: LookinDisplayItem) -> String?
 ```
 
 - `displayingObject.oid == 0` 时返回 `nil`。
@@ -89,9 +90,9 @@ String(format: "0x%lx", oid)
 
 - `LookInside/Dashboard/Search/LKDashboardHeaderView.h/.m`：增加说明入口 delegate 事件。
 - `LookInside/Dashboard/LKDashboardViewController.m`：响应说明入口、创建/更新 Object ID 行。
-- `LookInside/Dashboard/LKCustomPropertyGuideWindowController.h/.m`：说明窗口、模板及复制反馈。
-- `LookInside/Dashboard/LKDashboardObjectIDView.h/.m`：Object ID 展示和复制。
-- `LookInside/Base/Category/LookinDisplayItem+LookinClient.h/.m`：共享 MCP Object ID 格式化接口。
+- `LookInside/Dashboard/LKCustomPropertyGuideWindowController.swift`：说明窗口、模板及复制反馈。
+- `LookInside/Dashboard/LKDashboardObjectIDView.swift`：Object ID 展示和复制。
+- `LookInside/MCPBridge/LKMCPObjectIdentifierFormatter.swift`：共享 MCP Object ID 选择与格式化接口。
 - `LookInside/MCPBridge/LKMCPBridgeLiveDocumentLookup.swift`：改为调用共享接口。
 - `LookInside.xcodeproj/project.pbxproj`：加入新源码文件。
 
