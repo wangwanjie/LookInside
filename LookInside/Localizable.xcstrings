@@ -7513,6 +7513,22 @@
         }
       }
     },
+    "Copy Object ID" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Copy Object ID"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "复制对象 ID"
+          }
+        }
+      }
+    },
     "Copy text \"%@\"" : {
       "localizations" : {
         "ar" : {
@@ -25561,6 +25577,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "通知"
+          }
+        }
+      }
+    },
+    "Object ID" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Object ID"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "对象 ID"
           }
         }
       }
