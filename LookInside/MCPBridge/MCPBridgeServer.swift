@@ -273,6 +273,8 @@ final class MCPBridgeServer: NSObject {
             )
         case "invoke.method":
             return await invocationDispatch(request: request)
+        case "hierarchy.reload":
+            return await refreshDispatch(request: request)
         case "attribute.modify":
             return await modificationDispatch(request: request)
         case "details.read":

@@ -27,6 +27,7 @@ const bridgeMethods = {
   ping: "ping",
   targets_list: "targets.list",
   hierarchy_read: "hierarchy.read",
+  hierarchy_reload: "hierarchy.reload",
   attributes_read: "attributes.read",
   details_read: "details.read",
   invoke_method: "invoke.method",
@@ -55,6 +56,18 @@ const tools = [
         targetIdentifier: { type: "string" },
         rootObjectIdentifier: { type: "string" },
         depth: { type: "integer", minimum: 1 },
+      },
+    },
+  },
+  {
+    name: "hierarchy_reload",
+    description: "Reload the target hierarchy and wait until LookInside updates its desktop cache.",
+    inputSchema: {
+      type: "object",
+      additionalProperties: false,
+      required: ["targetIdentifier"],
+      properties: {
+        targetIdentifier: { type: "string" },
       },
     },
   },

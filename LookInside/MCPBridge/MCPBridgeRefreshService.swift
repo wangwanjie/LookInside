@@ -39,7 +39,7 @@ final class MCPBridgeRefreshService {
     // MARK: - Entry point
 
     func handle(request: MCPBridgeRequest) async -> MCPBridgeResponse {
-        guard request.method == "hierarchy.refresh" else {
+        guard request.method == "hierarchy.refresh" || request.method == "hierarchy.reload" else {
             return .failure(identifier: request.identifier, error: .unknownMethod)
         }
         return await handleHierarchyRefresh(
