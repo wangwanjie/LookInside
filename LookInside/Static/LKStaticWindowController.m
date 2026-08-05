@@ -51,6 +51,7 @@ static NSError *LKStaticWindowControllerReloadErrorMake(LKStaticWindowController
 /// 当拉取 hierarchy 和更新截图时，该属性为 YES
 @property(nonatomic, assign) BOOL isFetchingHierarchy;
 @property(nonatomic, assign) BOOL isFetchingDetails;
+@property(nonatomic, strong) NSMutableArray<LKHierarchyReloadCompletion> *hierarchyReloadCompletionBlocks;
 
 @property(nonatomic, strong, readwrite) LKStaticHierarchyDataSource *hierarchyDataSource;
 @property(nonatomic, strong, readwrite) LKStaticAsyncUpdateManager *asyncUpdateManager;
@@ -405,6 +406,36 @@ static NSError *LKStaticWindowControllerReloadErrorMake(LKStaticWindowController
     }];
 }
 
+- (LKHierarchyReloadTriggerResult)triggerHierarchyReload {
+    return [self triggerHierarchyReloadWithCompletion:nil];
+}
+
+- (LKHierarchyReloadTriggerResult)triggerHierarchyReloadWithCompletion:(LKHierarchyReloadCompletion)completion {
+    if (self.isFetchingDetails) {
+        [self.asyncUpdateManager endUpdating];
+        return LKHierarchyReloadTriggerResultCancelledDetailsFetch;
+    }
+    if (!self.inspectableApp) {
+        [self popupAllInspectableAppsWithSource:MenuPopoverAppsListControllerEventSourceReloadButton];
+        return LKHierarchyReloadTriggerResultTargetSelectionPresented;
+    }
+    if (self.isFetchingHierarchy) {
+        [self _addHierarchyReloadCompletion:completion];
+        return LKHierarchyReloadTriggerResultJoinedExistingReload;
+    }
+
+    [self _addHierarchyReloadCompletion:completion];
+    @weakify(self);
+    [[self reloadHierarchySignalWithInitiator:LKHierarchyReloadInitiatorHost] subscribeNext:^(__unused LookinHierarchyInfo *info) {
+        @strongify(self);
+        [self _finishHierarchyReloadWithError:nil];
+    } error:^(NSError * _Nullable error) {
+        @strongify(self);
+        [self _finishHierarchyReloadWithError:error ?: LookinErr_Inner];
+    }];
+    return LKHierarchyReloadTriggerResultStarted;
+}
+
 - (RACSignal *)reloadHierarchySignalWithInitiator:(LKHierarchyReloadInitiator)initiator {
     if (self.isFetchingHierarchy) {
         return [RACSignal error:LKStaticWindowControllerReloadErrorMake(
@@ -463,7 +494,6 @@ static NSError *LKStaticWindowControllerReloadErrorMake(LKStaticWindowController
         didSettleResult = YES;
         [resultSubject sendNext:info];
         [resultSubject sendCompleted];
-
     } error:^(NSError * _Nullable error) {
         // error
         @strongify(self);
@@ -491,6 +521,24 @@ static NSError *LKStaticWindowControllerReloadErrorMake(LKStaticWindowController
                                      NSLocalizedString(@"The app finished the hierarchy request without returning a hierarchy.", nil))];
     }];
     return resultSubject;
+}
+
+- (void)_addHierarchyReloadCompletion:(LKHierarchyReloadCompletion)completion {
+    if (!completion) {
+        return;
+    }
+    if (!self.hierarchyReloadCompletionBlocks) {
+        self.hierarchyReloadCompletionBlocks = [NSMutableArray array];
+    }
+    [self.hierarchyReloadCompletionBlocks addObject:[completion copy]];
+}
+
+- (void)_finishHierarchyReloadWithError:(NSError *)error {
+    NSArray<LKHierarchyReloadCompletion> *completionBlocks = self.hierarchyReloadCompletionBlocks.copy;
+    [self.hierarchyReloadCompletionBlocks removeAllObjects];
+    for (LKHierarchyReloadCompletion completion in completionBlocks) {
+        completion(error);
+    }
 }
 
 - (void)_handleApp {

@@ -272,7 +272,7 @@ public final class LKMCPBridgeServer: NSObject {
                     "serverVersion": .string(currentHostMarketingVersion()),
                 ])
             )
-        case "invoke.method":
+        case "invoke.method", "hierarchy.reload":
             return await invocationDispatch(request: request)
         case "attribute.modify":
             return await modificationDispatch(request: request)

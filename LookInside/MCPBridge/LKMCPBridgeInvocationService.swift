@@ -1,7 +1,7 @@
 // LKMCPBridgeInvocationService.swift
 //
-// Handles the `invoke.method` bridge route: arbitrary zero-argument
-// Objective-C selector invocation on a view in an attached target app.
+// Handles RPC-emitting bridge routes, including `invoke.method` and the
+// fire-and-forget `hierarchy.reload` desktop trigger.
 // This is the bridge's first mutating route — it goes over Peertalk
 // (RPC 206 `LookinRequestType_InvokeMethod`) and can change the
 // inspected app's state. Read-only inspection routes live in
@@ -20,6 +20,13 @@ import os
 
 @MainActor
 public final class LKMCPBridgeInvocationService {
+
+    private enum HierarchyReloadOutcome {
+        case reloaded
+        case cancelledDetailsFetch
+        case notReady
+        case failed(NSError)
+    }
 
     // MARK: - Constants pulled from upstream LookinDefines.h
     //
@@ -64,13 +71,110 @@ public final class LKMCPBridgeInvocationService {
     // MARK: - Entry point
 
     public func handle(request: LKMCPBridgeRequest) async -> LKMCPBridgeResponse {
-        guard request.method == "invoke.method" else {
+        switch request.method {
+        case "invoke.method":
+            return await handleInvokeMethod(
+                identifier: request.identifier,
+                parameters: request.parameters
+            )
+        case "hierarchy.reload":
+            return await handleHierarchyReload(
+                identifier: request.identifier,
+                parameters: request.parameters
+            )
+        default:
             return .failure(identifier: request.identifier, error: .unknownMethod)
         }
-        return await handleInvokeMethod(
-            identifier: request.identifier,
-            parameters: request.parameters
-        )
+    }
+
+    // MARK: - hierarchy.reload
+
+    private func handleHierarchyReload(
+        identifier: String,
+        parameters: [String: LKMCPBridgeJSONValue]?
+    ) async -> LKMCPBridgeResponse {
+        guard let parameters,
+              case .string(let targetIdentifier)? = parameters["targetIdentifier"]
+        else {
+            return .failure(identifier: identifier, error: .invalidParameters)
+        }
+
+        guard let document = LKMCPBridgeLiveDocumentLookup.findLiveDocument(
+            targetIdentifier: targetIdentifier
+        ) else {
+            return .failure(
+                identifier: identifier,
+                error: LKMCPBridgeErrorPayload(
+                    code: "hierarchy.targetNotFound",
+                    message: "No live inspection document found for target identifier \(targetIdentifier)."
+                )
+            )
+        }
+
+        guard let windowController = document.windowControllers.compactMap({
+            $0 as? LKStaticWindowController
+        }).first else {
+            return .failure(
+                identifier: identifier,
+                error: LKMCPBridgeErrorPayload(
+                    code: "hierarchy.notReady",
+                    message: "The live inspection document has no hierarchy window ready to reload."
+                )
+            )
+        }
+
+        let outcome: HierarchyReloadOutcome = await withCheckedContinuation { continuation in
+            let triggerResult = windowController.triggerHierarchyReload { error in
+                if let error {
+                    continuation.resume(returning: .failed(error as NSError))
+                } else {
+                    continuation.resume(returning: .reloaded)
+                }
+            }
+
+            switch triggerResult {
+            case .started, .joinedExistingReload:
+                break
+            case .cancelledDetailsFetch:
+                continuation.resume(returning: .cancelledDetailsFetch)
+            case .targetSelectionPresented:
+                continuation.resume(returning: .notReady)
+            @unknown default:
+                continuation.resume(returning: .notReady)
+            }
+        }
+
+        switch outcome {
+        case .reloaded:
+            return .success(
+                identifier: identifier,
+                result: .object(["reloaded": .bool(true)])
+            )
+        case .cancelledDetailsFetch:
+            return .success(
+                identifier: identifier,
+                result: .object([
+                    "reloaded": .bool(false),
+                    "reason": .string("cancelledDetailsFetch"),
+                ])
+            )
+        case .notReady:
+            return .failure(
+                identifier: identifier,
+                error: LKMCPBridgeErrorPayload(
+                    code: "hierarchy.notReady",
+                    message: "The live inspection document is not currently bound to an inspectable app."
+                )
+            )
+        case .failed(let error):
+            return .failure(
+                identifier: identifier,
+                error: LKMCPBridgeErrorPayload(
+                    code: "hierarchy.reloadFailed",
+                    message: error.localizedDescription
+                )
+            )
+        }
     }
 
     // MARK: - invoke.method

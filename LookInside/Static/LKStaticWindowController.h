@@ -51,6 +51,15 @@ typedef NS_ENUM(NSInteger, LKStaticWindowControllerReloadErrorCode) {
     LKStaticWindowControllerReloadErrorNoResponse = 5,
 };
 
+typedef NS_ENUM(NSInteger, LKHierarchyReloadTriggerResult) {
+    LKHierarchyReloadTriggerResultStarted,
+    LKHierarchyReloadTriggerResultJoinedExistingReload,
+    LKHierarchyReloadTriggerResultCancelledDetailsFetch,
+    LKHierarchyReloadTriggerResultTargetSelectionPresented,
+};
+
+typedef void (^LKHierarchyReloadCompletion)(NSError *_Nullable error);
+
 @interface LKStaticWindowController : LKWindowController
 
 @property(nonatomic, strong, readonly) LKStaticViewController *viewController;
@@ -99,5 +108,15 @@ typedef NS_ENUM(NSInteger, LKStaticWindowControllerReloadErrorCode) {
 /// publishes `didReloadHierarchyInfo` -- so an observer of that subject
 /// reads the value belonging to the reload it is being told about.
 @property(nonatomic, assign, readonly) LKHierarchyReloadInitiator lastReloadInitiator;
+
+/// Triggers the same asynchronous hierarchy reload behavior as the toolbar
+/// reload button and reports only whether the operation was started.
+- (LKHierarchyReloadTriggerResult)triggerHierarchyReload;
+
+/// Completion runs after the desktop hierarchy cache has been replaced, or
+/// with the inspected app's request error. Concurrent callers join the active
+/// reload and receive the same final result.
+- (LKHierarchyReloadTriggerResult)triggerHierarchyReloadWithCompletion:(nullable LKHierarchyReloadCompletion)completion
+    NS_SWIFT_NAME(triggerHierarchyReload(completion:));
 
 @end
