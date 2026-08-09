@@ -3894,6 +3894,7 @@
       }
     },
     "Attach to Running App…" : {
+      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -12922,22 +12923,6 @@
         }
       }
     },
-    "Top-level title overrides the inspected object's display name. In each property, title names the row, section groups it, valueType selects its renderer or editor, and value is the current value. retainedSetter makes string, number, bool, color, rect, size, point, insets, and enum values editable; omit it for read-only values. shadow and json are read-only." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Top-level title overrides the inspected object's display name. In each property, title names the row, section groups it, valueType selects its renderer or editor, and value is the current value. retainedSetter makes string, number, bool, color, rect, size, point, insets, and enum values editable; omit it for read-only values. shadow and json are read-only."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "顶层 title 会覆盖被检查对象的显示名称。每个属性中的 title 是行标题，section 用于分组，valueType 决定渲染器或编辑器，value 是当前值。string、number、bool、color、rect、size、point、insets 和 enum 可通过 retainedSetter 编辑；省略时为只读。shadow 和 json 仅支持只读。"
-          }
-        }
-      }
-    },
     "File Size" : {
       "localizations" : {
         "ar" : {
@@ -19048,6 +19033,7 @@
       }
     },
     "Legacy custom property guides are disabled in this community build. See the repository README instead." : {
+      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -20119,7 +20105,6 @@
       }
     },
     "License Timeout" : {
-      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -35143,6 +35128,22 @@
         }
       }
     },
+    "Supported types: string, number, bool, color, rect, size, point, insets, shadow, enum, json." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Supported types: string, number, bool, color, rect, size, point, insets, shadow, enum, json."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "支持类型：string、number、bool、color、rect、size、point、insets、shadow、enum、json。"
+          }
+        }
+      }
+    },
     "swift-pd-guess failed." : {
       "localizations" : {
         "ar" : {
@@ -35303,22 +35304,6 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "尚未安裝 swift-pd-guess"
-          }
-        }
-      }
-    },
-    "Supported types: string, number, bool, color, rect, size, point, insets, shadow, enum, json." : {
-      "localizations" : {
-        "en" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "Supported types: string, number, bool, color, rect, size, point, insets, shadow, enum, json."
-          }
-        },
-        "zh-Hans" : {
-          "stringUnit" : {
-            "state" : "translated",
-            "value" : "支持类型：string、number、bool、color、rect、size、point、insets、shadow、enum、json。"
           }
         }
       }
@@ -40409,7 +40394,6 @@
       }
     },
     "Timeout for license challenge and verification requests, in seconds. Default: 5s." : {
-      "extractionState" : "stale",
       "localizations" : {
         "ar" : {
           "stringUnit" : {
@@ -40818,6 +40802,22 @@
           "stringUnit" : {
             "state" : "translated",
             "value" : "類型"
+          }
+        }
+      }
+    },
+    "Top-level title overrides the inspected object's display name. In each property, title names the row, section groups it, valueType selects its renderer or editor, and value is the current value. retainedSetter makes string, number, bool, color, rect, size, point, insets, and enum values editable; omit it for read-only values. shadow and json are read-only." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Top-level title overrides the inspected object's display name. In each property, title names the row, section groups it, valueType selects its renderer or editor, and value is the current value. retainedSetter makes string, number, bool, color, rect, size, point, insets, and enum values editable; omit it for read-only values. shadow and json are read-only."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "顶层 title 会覆盖被检查对象的显示名称。每个属性中的 title 是行标题，section 用于分组，valueType 决定渲染器或编辑器，value 是当前值。string、number、bool、color、rect、size、point、insets 和 enum 可通过 retainedSetter 编辑；省略时为只读。shadow 和 json 仅支持只读。"
           }
         }
       }
