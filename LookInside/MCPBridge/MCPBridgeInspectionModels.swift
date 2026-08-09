@@ -86,6 +86,10 @@ struct MCPBridgeViewNode: Sendable, Codable {
     /// `0x600000abc123`). Stable within a single connected app instance.
     let objectIdentifier: String
 
+    /// Hex-encoded `LookinObject.oid` of the immediate parent node,
+    /// prefixed with `0x`. `nil` for top-level roots.
+    let parentObjectIdentifier: String?
+
     /// Leaf Objective-C class name (head of `InspectedObject.classChainList`),
     /// e.g. "UIButton". May be empty if the underlying display item is
     /// configured by the in-app `lookin_customDebugInfos` hook without
@@ -311,6 +315,7 @@ struct MCPBridgeModificationResult: Sendable, Codable {
 /// single batch may contain both regular and secure-input views.
 struct MCPBridgeViewDetail: Sendable, Codable {
     let objectIdentifier: String
+    let parentObjectIdentifier: String?
     let groups: [MCPBridgeAttributeGroup]
     let secureContent: Bool
 }

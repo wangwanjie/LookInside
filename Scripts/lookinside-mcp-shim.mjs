@@ -47,7 +47,7 @@ const tools = [
   },
   {
     name: "hierarchy_read",
-    description: "Read a target view hierarchy, optionally scoped to a root object and depth.",
+    description: "Read a target view hierarchy, optionally scoped to a root object and depth. Each node includes objectIdentifier, parentObjectIdentifier, childObjectIdentifiers, and optionally inlined children.",
     inputSchema: {
       type: "object",
       additionalProperties: false,
@@ -87,7 +87,7 @@ const tools = [
   },
   {
     name: "details_read",
-    description: "Fetch detailed attributes for multiple object identifiers.",
+    description: "Fetch detailed attributes for multiple object identifiers. Each detail entry includes objectIdentifier, parentObjectIdentifier, groups, and secureContent.",
     inputSchema: {
       type: "object",
       additionalProperties: false,

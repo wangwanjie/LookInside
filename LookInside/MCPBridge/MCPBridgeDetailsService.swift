@@ -277,6 +277,9 @@ final class MCPBridgeDetailsService {
 
             emittedDetails.append(MCPBridgeViewDetail(
                 objectIdentifier: resolved.identifier,
+                parentObjectIdentifier: resolved.displayItem.superItem.map(
+                    LKMCPBridgeLiveDocumentLookup.objectIdentifierString(for:)
+                ),
                 groups: encodedGroups,
                 secureContent: redactSecureContent
             ))
