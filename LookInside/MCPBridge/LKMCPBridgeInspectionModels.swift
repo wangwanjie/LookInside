@@ -86,6 +86,10 @@ public struct LKMCPBridgeViewNode: Sendable, Codable {
     /// `0x600000abc123`). Stable within a single connected app instance.
     public let objectIdentifier: String
 
+    /// Hex-encoded `LookinObject.oid` of the immediate parent node,
+    /// prefixed with `0x`. `nil` for top-level roots.
+    public let parentObjectIdentifier: String?
+
     /// Leaf Objective-C class name (head of `LookinObject.classChainList`),
     /// e.g. "UIButton". May be empty if the underlying display item is
     /// configured by the in-app `lookin_customDebugInfos` hook without
@@ -311,6 +315,7 @@ public struct LKMCPBridgeModificationResult: Sendable, Codable {
 /// single batch may contain both regular and secure-input views.
 public struct LKMCPBridgeViewDetail: Sendable, Codable {
     public let objectIdentifier: String
+    public let parentObjectIdentifier: String?
     public let groups: [LKMCPBridgeAttributeGroup]
     public let secureContent: Bool
 }
@@ -520,5 +525,3 @@ public struct LKMCPBridgeRefreshResult: Sendable, Codable {
     /// expensive repeating this would be.
     public let durationMilliseconds: Int
 }
-
-

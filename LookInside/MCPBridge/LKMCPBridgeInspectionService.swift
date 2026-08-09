@@ -182,6 +182,7 @@ public final class LKMCPBridgeInspectionService {
 
     private func makeViewNode(from item: LookinDisplayItem, remainingDepth: Int?, includeLayoutGuides: Bool, includeCells: Bool) -> LKMCPBridgeViewNode {
         let identity = LKMCPBridgeLiveDocumentLookup.objectIdentifierString(for: item)
+        let parentIdentity = item.superItem.map(LKMCPBridgeLiveDocumentLookup.objectIdentifierString(for:))
         let className = item.displayingObject()?.classChainList?.first ?? ""
         let frame = LKMCPBridgeRect(cgRect: LKMCPBridgeLiveDocumentLookup.rootSpaceFrame(for: item))
         var subitems = item.subitems ?? []
@@ -206,6 +207,7 @@ public final class LKMCPBridgeInspectionService {
 
         return LKMCPBridgeViewNode(
             objectIdentifier: identity,
+            parentObjectIdentifier: parentIdentity,
             className: className,
             nodeKind: Self.nodeKindString(for: item),
             frame: frame,
