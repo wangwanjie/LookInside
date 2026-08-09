@@ -541,75 +541,77 @@ private final class LKSwiftUISupportAuthServerBridge {
     }
 
     func allowProtectedFeatureAccess(for window: NSWindow?) -> Bool {
-        if Thread.isMainThread,
-           let mainThreadDecision = mainThreadProtectedFeatureAccessDecision(window: window, presentsAlerts: true)
-        {
-            return mainThreadDecision
-        }
-
-        guard hasPersistedLocalLicenseMaterial() else {
-            let payload = LKSwiftUISupportAuthServerAccessDecisionPayload.activationRequired
-            presentAccessAlert(title: payload.title, detail: payload.message, window: window)
-            return false
-        }
-        do {
-            let payload = try checkProtectedFeatureAccess(window: window)
-
-            recordAccessDecision(payload)
-
-            switch payload.decision {
-            case .allow:
-                return true
-            case .allowWithWarning:
-                presentAccessAlert(title: payload.title, detail: payload.message, window: window, deduplicate: true)
-                return true
-            case .block:
-                presentAccessAlert(title: payload.title, detail: payload.message, window: window)
-                return false
-            }
-        } catch {
-            if handleInstallerCancellation(error) {
-                return false
-            }
-            if Thread.isMainThread, shouldTriggerRefresh(for: error) {
-                LKSwiftUISupportLogger.authServer.notice(
-                    "protected feature access scheduled background auth server refresh after error=\(error.localizedDescription, privacy: .public)"
-                )
-                refreshActivationStateInBackground()
-                presentLocalAlert(
-                    title: NSLocalizedString("LookInside Auth Server Updating", comment: ""),
-                    detail: NSLocalizedString("LookInside is preparing the local Auth Server. Try the action again after the update finishes.", comment: ""),
-                    window: window
-                )
-                return false
-            }
-            presentRuntimeAlert(title: NSLocalizedString("LookInside Auth Server Required", comment: ""), detail: error.localizedDescription, window: window)
-            return false
-        }
+        true
+//        if Thread.isMainThread,
+//           let mainThreadDecision = mainThreadProtectedFeatureAccessDecision(window: window, presentsAlerts: true)
+//        {
+//            return mainThreadDecision
+//        }
+//
+//        guard hasPersistedLocalLicenseMaterial() else {
+//            let payload = LKSwiftUISupportAuthServerAccessDecisionPayload.activationRequired
+//            presentAccessAlert(title: payload.title, detail: payload.message, window: window)
+//            return false
+//        }
+//        do {
+//            let payload = try checkProtectedFeatureAccess(window: window)
+//
+//            recordAccessDecision(payload)
+//
+//            switch payload.decision {
+//            case .allow:
+//                return true
+//            case .allowWithWarning:
+//                presentAccessAlert(title: payload.title, detail: payload.message, window: window, deduplicate: true)
+//                return true
+//            case .block:
+//                presentAccessAlert(title: payload.title, detail: payload.message, window: window)
+//                return false
+//            }
+//        } catch {
+//            if handleInstallerCancellation(error) {
+//                return false
+//            }
+//            if Thread.isMainThread, shouldTriggerRefresh(for: error) {
+//                LKSwiftUISupportLogger.authServer.notice(
+//                    "protected feature access scheduled background auth server refresh after error=\(error.localizedDescription, privacy: .public)"
+//                )
+//                refreshActivationStateInBackground()
+//                presentLocalAlert(
+//                    title: NSLocalizedString("LookInside Auth Server Updating", comment: ""),
+//                    detail: NSLocalizedString("LookInside is preparing the local Auth Server. Try the action again after the update finishes.", comment: ""),
+//                    window: window
+//                )
+//                return false
+//            }
+//            presentRuntimeAlert(title: NSLocalizedString("LookInside Auth Server Required", comment: ""), detail: error.localizedDescription, window: window)
+//            return false
+//        }
     }
 
     func canUseProtectedFeatureWithoutPrompt() -> Bool {
-        if Thread.isMainThread,
-           let mainThreadDecision = mainThreadProtectedFeatureAccessDecision(window: nil, presentsAlerts: false)
-        {
-            return mainThreadDecision
-        }
-
-        switch currentActivationState {
-        case .activated:
-            return true
-        case .notActivated:
-            if hasPersistedLocalLicenseMaterial() {
-                refreshActivationStateInBackground()
-            }
-            return false
-        case .unknown:
-            guard hasPersistedLocalLicenseMaterial() else {
-                return false
-            }
-            refreshActivationStateInBackground()
-            return true
-        }
+        true
+//        if Thread.isMainThread,
+//           let mainThreadDecision = mainThreadProtectedFeatureAccessDecision(window: nil, presentsAlerts: false)
+//        {
+//            return mainThreadDecision
+//        }
+//
+//        switch currentActivationState {
+//        case .activated:
+//            return true
+//        case .notActivated:
+//            if hasPersistedLocalLicenseMaterial() {
+//                refreshActivationStateInBackground()
+//            }
+//            return false
+//        case .unknown:
+//            guard hasPersistedLocalLicenseMaterial() else {
+//                return false
+//            }
+//            refreshActivationStateInBackground()
+//            return true
+//        }
     }
 
     private func mainThreadProtectedFeatureAccessDecision(window: NSWindow?, presentsAlerts: Bool) -> Bool? {
