@@ -372,31 +372,7 @@ static NSError *LKStaticWindowControllerReloadErrorMake(LKStaticWindowController
 #pragma mark - Event Handler
 
 - (void)_handleReload {
-    // The button carries two behaviors the shared core deliberately does
-    // not: while details are syncing it doubles as a stop button, and with
-    // no app bound it opens the app picker. Both are answers only a click
-    // deserves — a programmatic caller gets an error instead.
-    if (self.isFetchingDetails) {
-        // 停止拉取
-        [self.asyncUpdateManager endUpdating];
-        return;
-    }
-
-    // Phase F: this window's bound app is the only source of truth.
-    if (!self.inspectableApp) {
-        [self popupAllInspectableAppsWithSource:MenuPopoverAppsListControllerEventSourceReloadButton];
-        return;
-    }
-
-    if (self.isFetchingHierarchy) {
-        return;
-    }
-
-    @weakify(self);
-    [[self reloadHierarchySignalWithInitiator:LKHierarchyReloadInitiatorHost] subscribeError:^(NSError * _Nullable error) {
-        @strongify(self);
-        [[NSAlert alertWithError:error] beginSheetModalForWindow:self.window completionHandler:nil];
-    }];
+    [self triggerHierarchyReload];
 }
 
 - (void)_handleShowBackingLayersDidChange:(LookinMsgActionParams *)param {
@@ -412,6 +388,7 @@ static NSError *LKStaticWindowControllerReloadErrorMake(LKStaticWindowController
 
 - (LKHierarchyReloadTriggerResult)triggerHierarchyReloadWithCompletion:(LKHierarchyReloadCompletion)completion {
     if (self.isFetchingDetails) {
+        // 停止拉取
         [self.asyncUpdateManager endUpdating];
         return LKHierarchyReloadTriggerResultCancelledDetailsFetch;
     }
@@ -425,12 +402,31 @@ static NSError *LKStaticWindowControllerReloadErrorMake(LKStaticWindowController
     }
 
     [self _addHierarchyReloadCompletion:completion];
+    LKInspectableApp *app = self.inspectableApp;
+    self.lastReloadInitiator = LKHierarchyReloadInitiatorHost;
+    BOOL shouldPresentAlert = (completion == nil);
+    
+    self.isFetchingHierarchy = YES;
+    
+    [self.viewController.progressView animateToProgress:InitialIndicatorProgressWhenFetchHierarchy];
+    
+    [LKPerformanceReporter.sharedInstance willStartReload];
     @weakify(self);
-    [[self reloadHierarchySignalWithInitiator:LKHierarchyReloadInitiatorHost] subscribeNext:^(__unused LookinHierarchyInfo *info) {
+    [[app fetchHierarchyData] subscribeNext:^(LookinHierarchyInfo *info) {
         @strongify(self);
+        [self.viewController.progressView finishWithCompletion:nil];
+        [self.hierarchyDataSource reloadWithHierarchyInfo:info keepState:YES];
+        self.isFetchingHierarchy = NO;
+
+        [LKPerformanceReporter.sharedInstance didFetchHierarchy];
         [self _finishHierarchyReloadWithError:nil];
     } error:^(NSError * _Nullable error) {
         @strongify(self);
+        [self.viewController.progressView resetToZero];
+        self.isFetchingHierarchy = NO;
+        if (shouldPresentAlert) {
+            [[NSAlert alertWithError:error] beginSheetModalForWindow:self.window completionHandler:nil];
+        }
         [self _finishHierarchyReloadWithError:error ?: LookinErr_Inner];
     }];
     return LKHierarchyReloadTriggerResultStarted;
