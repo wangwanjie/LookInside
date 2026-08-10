@@ -79,6 +79,12 @@ enum MCPBridgeLiveDocumentLookup {
         LKMCPObjectIdentifierFormatter.objectIdentifier(for: item) ?? "0x0"
     }
 
+    /// Reads the Objective-C `superItem` property without going through the
+    /// Swift importer, which renames it to the reserved keyword `super`.
+    static func parent(of item: DisplayItem) -> DisplayItem? {
+        item.value(forKey: "superItem") as? DisplayItem
+    }
+
     /// The item's rectangle in the root coordinate space.
     ///
     /// `DisplayItem.frame` is *parent*-relative -- `calculateFrameToRoot`

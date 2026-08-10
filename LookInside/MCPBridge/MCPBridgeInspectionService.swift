@@ -184,7 +184,9 @@ final class MCPBridgeInspectionService {
 
     private func makeViewNode(from item: DisplayItem, remainingDepth: Int?, includeLayoutGuides: Bool, includeCells: Bool) -> MCPBridgeViewNode {
         let identity = MCPBridgeLiveDocumentLookup.objectIdentifierString(for: item)
-        let parentIdentity = item.superItem.map(MCPBridgeLiveDocumentLookup.objectIdentifierString(for:))
+        let parentIdentity = MCPBridgeLiveDocumentLookup.parent(of: item).map(
+            MCPBridgeLiveDocumentLookup.objectIdentifierString(for:)
+        )
         let className = item.displayingObject()?.classChainList?.first ?? ""
         let frame = MCPBridgeRect(cgRect: MCPBridgeLiveDocumentLookup.rootSpaceFrame(for: item))
         var subitems = item.subitems ?? []

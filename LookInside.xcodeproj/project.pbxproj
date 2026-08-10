@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 100;
+	objectVersion = 77;
 	objects = {
 
 /* Begin PBXAggregateTarget section */
@@ -868,7 +868,6 @@
 		AA48F29821CC0CA50032EC2C /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			files = (
-				E9FE990C3026C657008692AF /* UIFoundation in Frameworks */,
 				50EAE1AA2F71C01A00EBE063 /* Security.framework in Frameworks */,
 				50EAE1AB2F71C01A00EBE063 /* Quartz.framework in Frameworks */,
 				50EAE1AC2F71C01A00EBE063 /* QuickLookThumbnailing.framework in Frameworks */,
@@ -1137,6 +1136,7 @@
 				"    /bin/zsh -lc \"$PREPARE_SCRIPT\"",
 				"",
 			);
+		};
 		E9D000022FC4000000010001 /* Build Release DMG */ = {
 			isa = PBXShellScriptBuildPhase;
 			alwaysOutOfDate = 1;
@@ -1567,13 +1567,14 @@
 		};
 /* End XCLocalSwiftPackageReference section */
 
-/* Begin XCRemoteSwiftPackageReference section */
-		E37B8D202F97B1B100600001 /* XCRemoteSwiftPackageReference "LookInsidePrivateDiscriminator" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/LookInsideApp/LookInsidePrivateDiscriminator.git";
-			requirement = {
-				kind = exactVersion;
-				version = 0.0.2;
+	/* Begin XCRemoteSwiftPackageReference section */
+			E37B8D202F97B1B100600001 /* XCRemoteSwiftPackageReference "LookInsidePrivateDiscriminator" */ = {
+				isa = XCRemoteSwiftPackageReference;
+				repositoryURL = "https://github.com/LookInsideApp/LookInsidePrivateDiscriminator.git";
+				requirement = {
+					kind = exactVersion;
+					version = 0.0.2;
+				};
 			};
 		};
 		E9FE990A3026C657008692AF /* XCRemoteSwiftPackageReference "UIFoundation" */ = {
