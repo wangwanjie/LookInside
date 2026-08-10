@@ -36,6 +36,21 @@ OBJECT_IDENTIFIER_LIST_TEST="$ROOT/Tests/MCPBridge/LKMCPBridgeObjectIdentifierLi
 swiftc -parse-as-library "$FRAME" "$OBJECT_IDENTIFIER_LIST" "$OBJECT_IDENTIFIER_LIST_TEST" -o "$TMPDIR/object-identifier-list-test"
 "$TMPDIR/object-identifier-list-test"
 
+DETAIL_OBJECT_IDENTIFIER_SELECTOR="$ROOT/LookInside/MCPBridge/LKMCPBridgeDetailObjectIdentifierSelector.swift"
+DETAIL_OBJECT_IDENTIFIER_SELECTOR_TEST="$ROOT/Tests/MCPBridge/LKMCPBridgeDetailObjectIdentifierSelectorTests.swift"
+
+swiftc -parse-as-library "$DETAIL_OBJECT_IDENTIFIER_SELECTOR" "$DETAIL_OBJECT_IDENTIFIER_SELECTOR_TEST" -o "$TMPDIR/detail-object-identifier-selector-test"
+"$TMPDIR/detail-object-identifier-selector-test"
+
+# Both RPC 203 routes must use the transport OID selector instead of the
+# display OID exposed on the MCP wire.
+for service in "$ROOT/LookInside/MCPBridge/LKMCPBridgeDetailsService.swift" "$ROOT/LookInside/MCPBridge/LKMCPBridgeScreenshotService.swift"; do
+    if ! grep -Fq "hierarchyDetailsObjectIdentifier" "$service"; then
+        echo "FAIL: $(basename "$service") must select an RPC 203-compatible object identifier" >&2
+        exit 1
+    fi
+done
+
 # Catch-clause ordering guard.
 #
 # `catch let error as NSError` matches *every* Swift error -- they all bridge

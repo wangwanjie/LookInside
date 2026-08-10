@@ -149,7 +149,10 @@ public final class LKMCPBridgeDetailsService {
                 amongRoots: roots,
                 matchingObjectIdentifier: requested
             ),
-                  let nativeOid = displayItem.displayingObject()?.oid,
+                  let nativeOid = LKMCPBridgeLiveDocumentLookup.hierarchyDetailsObjectIdentifier(
+                    for: displayItem,
+                    targetAppInfo: document.inspectableApp.appInfo
+                  ),
                   nativeOid != 0
             else {
                 failedIdentifiers.append(requested)

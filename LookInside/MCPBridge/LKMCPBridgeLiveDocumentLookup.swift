@@ -80,6 +80,22 @@ enum LKMCPBridgeLiveDocumentLookup {
         LKMCPObjectIdentifierFormatter.objectIdentifier(for: item) ?? "0x0"
     }
 
+    /// Selects the runtime identifier accepted by RPC 203 (`HierarchyDetails`).
+    /// This is deliberately distinct from `objectIdentifierString(for:)`: the
+    /// latter identifies the display object for the MCP wire contract, while
+    /// an iOS target's server resolves detail tasks through CALayer.
+    static func hierarchyDetailsObjectIdentifier(
+        for item: LookinDisplayItem,
+        targetAppInfo: LookinAppInfo?
+    ) -> UInt? {
+        LKMCPBridgeDetailObjectIdentifierSelector.select(
+            targetIsMac: LKHelper.appInfoLooksLikeMacTarget(targetAppInfo),
+            layerObjectIdentifier: item.layerObject?.oid ?? 0,
+            viewObjectIdentifier: item.viewObject?.oid ?? 0,
+            windowObjectIdentifier: item.windowObject?.oid ?? 0
+        )
+    }
+
     /// Reads the Objective-C `superItem` property without going through the
     /// Swift importer, which renames it to the reserved keyword `super`.
     static func parent(of item: LookinDisplayItem) -> LookinDisplayItem? {
