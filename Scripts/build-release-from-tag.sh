@@ -456,17 +456,15 @@ verify_injector_bundle_layout() {
 		fail "Injector binary SMAuthorizedClients does not authorize $HOST_BUNDLE_IDENTIFIER for team $INJECTOR_AUTHORIZED_TEAM_ID"
 }
 
-# The MCP server rides the host's release so it can never drift out of step
-# with the MCPBridge protocol the host speaks. A release that quietly shipped
-# without it would present as "the MCP integration disappeared in this
-# version" to every user who configured their agent against the bundled path.
-verify_mcp_cli_bundle_layout() {
+# The app bundles its MCP stdio server as JavaScript. Clients launch this shim,
+# which forwards requests to the host's local MCPBridge socket.
+verify_mcp_shim_bundle_layout() {
 	local app_path="$1"
-	local mcp_binary="$app_path/Contents/Resources/lookinside-mcp"
+	local mcp_shim="$app_path/Contents/Resources/MCP/lookinside-mcp-shim.mjs"
 
-	[[ -f "$mcp_binary" ]] || fail "MCP server binary is missing: $mcp_binary"
-	[[ -x "$mcp_binary" ]] || fail "MCP server binary is not executable: $mcp_binary"
-	is_mach_o_file "$mcp_binary" || fail "MCP server binary is not Mach-O: $mcp_binary"
+	[[ -f "$mcp_shim" ]] || fail "MCP JavaScript shim is missing: $mcp_shim"
+	[[ -x "$mcp_shim" ]] || fail "MCP JavaScript shim is not executable: $mcp_shim"
+	node --check "$mcp_shim" >/dev/null || fail "MCP JavaScript shim has invalid syntax: $mcp_shim"
 }
 
 package_cli() {
@@ -558,8 +556,8 @@ sign_app_bundle() {
 	log "Verifying bundled injector daemon"
 	verify_injector_bundle_layout "$app_path"
 
-	log "Verifying bundled MCP server"
-	verify_mcp_cli_bundle_layout "$app_path"
+	log "Verifying bundled MCP JavaScript shim"
+	verify_mcp_shim_bundle_layout "$app_path"
 
 	remove_legacy_code_resources "$app_path"
 
