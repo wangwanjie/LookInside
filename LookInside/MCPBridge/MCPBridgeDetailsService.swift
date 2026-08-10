@@ -139,8 +139,11 @@ final class MCPBridgeDetailsService {
                 amongRoots: roots,
                 matchingObjectIdentifier: requested
             ),
-                let nativeOid = displayItem.displayingObject()?.oid,
-                nativeOid != 0
+                  let nativeOid = LKMCPBridgeLiveDocumentLookup.hierarchyDetailsObjectIdentifier(
+                    for: displayItem,
+                    targetAppInfo: document.inspectableApp.appInfo
+                  ),
+                  nativeOid != 0
             else {
                 failedIdentifiers.append(requested)
                 continue

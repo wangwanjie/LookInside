@@ -238,7 +238,10 @@ final class MCPBridgeScreenshotService {
         }
 
         // Slow path: ask the target app to render it now.
-        guard let nativeObjectIdentifier = displayItem.displayingObject()?.oid,
+        guard let nativeObjectIdentifier = LKMCPBridgeLiveDocumentLookup.hierarchyDetailsObjectIdentifier(
+            for: displayItem,
+            targetAppInfo: document.inspectableApp.appInfo
+        ),
               nativeObjectIdentifier != 0
         else {
             return .failure(

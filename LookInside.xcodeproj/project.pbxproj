@@ -436,6 +436,7 @@
 				MCPBridge/LKMCPBridgeAttributeEncoder.swift,
 				MCPBridge/LKMCPBridgeAttributeValueDecoder.swift,
 				MCPBridge/LKMCPBridgeConnection.swift,
+				MCPBridge/LKMCPBridgeDetailObjectIdentifierSelector.swift,
 				MCPBridge/LKMCPBridgeDetailsService.swift,
 				MCPBridge/LKMCPBridgeEventPublisher.swift,
 				MCPBridge/LKMCPBridgeFrame.swift,
