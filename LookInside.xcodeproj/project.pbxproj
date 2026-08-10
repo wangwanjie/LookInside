@@ -3,7 +3,7 @@
 	archiveVersion = 1;
 	classes = {
 	};
-	objectVersion = 100;
+	objectVersion = 77;
 	objects = {
 
 /* Begin PBXAggregateTarget section */
@@ -41,8 +41,6 @@
 		E97210092FC2E5C0003AAEA6 /* HelperClient in Frameworks */ = {isa = PBXBuildFile; productRef = E97210082FC2E5C0003AAEA6 /* HelperClient */; };
 		E972100B2FC2E5C0003AAEA6 /* HelperCommunication in Frameworks */ = {isa = PBXBuildFile; productRef = E972100A2FC2E5C0003AAEA6 /* HelperCommunication */; };
 		E972100D2FC2E5C0003AAEA6 /* InjectionServiceInterface in Frameworks */ = {isa = PBXBuildFile; productRef = E972100C2FC2E5C0003AAEA6 /* InjectionServiceInterface */; };
-		E9FE990C3026C657008692AF /* UIFoundation in Frameworks */ = {isa = PBXBuildFile; productRef = E9FE990B3026C657008692AF /* UIFoundation */; };
-		E9FE990E3026C657008692AF /* UIFoundationToolbox in Frameworks */ = {isa = PBXBuildFile; productRef = E9FE990D3026C657008692AF /* UIFoundationToolbox */; };
 /* End PBXBuildFile section */
 
 /* Begin PBXFileReference section */
@@ -714,7 +712,6 @@
 		AA48F29821CC0CA50032EC2C /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			files = (
-				E9FE990C3026C657008692AF /* UIFoundation in Frameworks */,
 				50EAE1AA2F71C01A00EBE063 /* Security.framework in Frameworks */,
 				50EAE1AB2F71C01A00EBE063 /* Quartz.framework in Frameworks */,
 				50EAE1AC2F71C01A00EBE063 /* QuickLookThumbnailing.framework in Frameworks */,
@@ -724,7 +721,6 @@
 				E97210092FC2E5C0003AAEA6 /* HelperClient in Frameworks */,
 				E972100B2FC2E5C0003AAEA6 /* HelperCommunication in Frameworks */,
 				E972100D2FC2E5C0003AAEA6 /* InjectionServiceInterface in Frameworks */,
-				E9FE990E3026C657008692AF /* UIFoundationToolbox in Frameworks */,
 			);
 		};
 /* End PBXFrameworksBuildPhase section */
@@ -783,8 +779,6 @@
 				E97210082FC2E5C0003AAEA6 /* HelperClient */,
 				E972100A2FC2E5C0003AAEA6 /* HelperCommunication */,
 				E972100C2FC2E5C0003AAEA6 /* InjectionServiceInterface */,
-				E9FE990B3026C657008692AF /* UIFoundation */,
-				E9FE990D3026C657008692AF /* UIFoundationToolbox */,
 			);
 			productName = Lookin;
 			productReference = AA48F29B21CC0CA50032EC2C /* LookInside.app */;
@@ -835,7 +829,6 @@
 				E37B8D202F97B1B100600001 /* XCRemoteSwiftPackageReference "LookInsidePrivateDiscriminator" */,
 				E97210042FC2D5C0003AAEA6 /* XCLocalSwiftPackageReference "LocalPackages/RunningApplicationKit" */,
 				E97210072FC2E3FC003AAEA6 /* XCLocalSwiftPackageReference "LocalPackages/swift-helper-service" */,
-				E9FE990A3026C657008692AF /* XCRemoteSwiftPackageReference "UIFoundation" */,
 			);
 			preferredProjectObjectVersion = 50;
 			productRefGroup = AA48F29C21CC0CA50032EC2C /* Products */;
@@ -955,6 +948,7 @@
 				"    /bin/zsh -lc \"$PREPARE_SCRIPT\"",
 				"",
 			);
+		};
 		E9D000022FC4000000010001 /* Build Release DMG */ = {
 			isa = PBXShellScriptBuildPhase;
 			alwaysOutOfDate = 1;
@@ -1387,34 +1381,15 @@
 		};
 /* End XCLocalSwiftPackageReference section */
 
-/* Begin XCRemoteSwiftPackageReference section */
-		E37B8D202F97B1B100600001 /* XCRemoteSwiftPackageReference "LookInsidePrivateDiscriminator" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/LookInsideApp/LookInsidePrivateDiscriminator.git";
-			requirement = {
-				kind = exactVersion;
-				version = 0.0.2;
+	/* Begin XCRemoteSwiftPackageReference section */
+			E37B8D202F97B1B100600001 /* XCRemoteSwiftPackageReference "LookInsidePrivateDiscriminator" */ = {
+				isa = XCRemoteSwiftPackageReference;
+				repositoryURL = "https://github.com/LookInsideApp/LookInsidePrivateDiscriminator.git";
+				requirement = {
+					kind = exactVersion;
+					version = 0.0.2;
+				};
 			};
-		};
-		E97210042FC2D5C0003AAEA6 /* XCLocalSwiftPackageReference "LocalPackages/RunningApplicationKit" */ = {
-			isa = XCLocalSwiftPackageReference;
-			relativePath = "LocalPackages/RunningApplicationKit";
-		};
-		E97210072FC2E3FC003AAEA6 /* XCLocalSwiftPackageReference "LocalPackages/swift-helper-service" */ = {
-			isa = XCLocalSwiftPackageReference;
-			relativePath = "LocalPackages/swift-helper-service";
-		};
-		E9FE990A3026C657008692AF /* XCRemoteSwiftPackageReference "UIFoundation" */ = {
-			isa = XCRemoteSwiftPackageReference;
-			repositoryURL = "https://github.com/Mx-Iris/UIFoundation";
-			requirement = {
-				kind = upToNextMajorVersion;
-				minimumVersion = 0.15.2;
-			};
-			traits = (
-				AppleInternal,
-			);
-		};
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
@@ -1447,16 +1422,6 @@
 			isa = XCSwiftPackageProductDependency;
 			package = E97210072FC2E3FC003AAEA6 /* XCLocalSwiftPackageReference "LocalPackages/swift-helper-service" */;
 			productName = InjectionServiceInterface;
-		};
-		E9FE990B3026C657008692AF /* UIFoundation */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = E9FE990A3026C657008692AF /* XCRemoteSwiftPackageReference "UIFoundation" */;
-			productName = UIFoundation;
-		};
-		E9FE990D3026C657008692AF /* UIFoundationToolbox */ = {
-			isa = XCSwiftPackageProductDependency;
-			package = E9FE990A3026C657008692AF /* XCRemoteSwiftPackageReference "UIFoundation" */;
-			productName = UIFoundationToolbox;
 		};
 /* End XCSwiftPackageProductDependency section */
 	};

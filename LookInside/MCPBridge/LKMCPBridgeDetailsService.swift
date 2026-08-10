@@ -330,7 +330,7 @@ public final class LKMCPBridgeDetailsService {
 
             emittedDetails.append(LKMCPBridgeViewDetail(
                 objectIdentifier: resolved.identifier,
-                parentObjectIdentifier: resolved.displayItem.superItem.map(
+                parentObjectIdentifier: LKMCPBridgeLiveDocumentLookup.parent(of: resolved.displayItem).map(
                     LKMCPBridgeLiveDocumentLookup.objectIdentifierString(for:)
                 ),
                 groups: encodedGroups,
