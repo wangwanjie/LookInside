@@ -27,6 +27,7 @@ const bridgeMethods = {
   ping: "ping",
   targets_list: "targets.list",
   hierarchy_read: "hierarchy.read",
+  hierarchy_find: "hierarchy.find",
   hierarchy_reload: "hierarchy.reload",
   attributes_read: "attributes.read",
   details_read: "details.read",
@@ -56,6 +57,22 @@ const tools = [
         targetIdentifier: { type: "string" },
         rootObjectIdentifier: { type: "string" },
         depth: { type: "integer", minimum: 1 },
+      },
+    },
+  },
+  {
+    name: "hierarchy_find",
+    description: "Search the cached target hierarchy by leaf class name using case-insensitive substring matching. Returns matching objects with objectIdentifier, className, frame, visibility, and ancestor path.",
+    inputSchema: {
+      type: "object",
+      additionalProperties: false,
+      required: ["targetIdentifier", "className"],
+      properties: {
+        targetIdentifier: { type: "string" },
+        className: { type: "string", minLength: 1 },
+        rootObjectIdentifier: { type: "string" },
+        includeHidden: { type: "boolean", default: true },
+        limit: { type: "integer", minimum: 1, maximum: 500, default: 50 },
       },
     },
   },
@@ -146,6 +163,18 @@ function rpcError(id, code, message) {
   return { jsonrpc: "2.0", id, error: { code, message } };
 }
 
+function bridgeParameters(toolName, argumentsValue) {
+  const toolArguments = argumentsValue || {};
+  if (toolName !== "hierarchy_find") return toolArguments;
+
+  const { className, ...parameters } = toolArguments;
+  return {
+    ...parameters,
+    query: className,
+    matchFields: ["className"],
+  };
+}
+
 function callBridge(method, params) {
   return new Promise((resolve, reject) => {
     const id = `${Date.now()}-${Math.random().toString(16).slice(2)}`;
@@ -209,7 +238,10 @@ async function handle(request) {
       if (!bridgeMethod) {
         return rpcError(id, -32602, `Unknown LookInside tool: ${toolName}`);
       }
-      const frame = await callBridge(bridgeMethod, params?.arguments || {});
+      const frame = await callBridge(
+        bridgeMethod,
+        bridgeParameters(toolName, params?.arguments),
+      );
       if (frame.error) {
         return {
           jsonrpc: "2.0",
