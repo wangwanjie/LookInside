@@ -8,6 +8,7 @@
 //
 
 #import "LKS_RequestHandler.h"
+#import "LKS_MethodReturnType.h"
 #import "LKS_ConnectionManager.h"
 #import "LookinConnectionResponseAttachment.h"
 #import "LookinHierarchyInfo.h"
@@ -205,7 +206,7 @@
         NSMutableDictionary *response = [NSMutableDictionary dictionary];
         if (strcmp(signature.methodReturnType, @encode(void)) == 0) {
             response[@"description"] = LookinStringFlag_VoidReturn;
-        } else if (signature.methodReturnLength == sizeof(id)) {
+        } else if (LKSMethodSignatureReturnsObject(signature)) {
             __unsafe_unretained id returnValue = nil;
             [invocation getReturnValue:&returnValue];
             if (returnValue) {
