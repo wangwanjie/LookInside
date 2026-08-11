@@ -58,6 +58,7 @@ run_xcode_build() {
 }
 
 run_command "dashboard feature tests" bash Scripts/test-dashboard-features.sh
+run_command "native macOS app preview tests" bash Scripts/test-macos-app-preview.sh
 run_command "sync derived source" bash Scripts/sync-derived-source.sh
 run_swift_build "swift build" build
 run_swift_build "swift build target=LookinServer" build -c debug --target LookinServer

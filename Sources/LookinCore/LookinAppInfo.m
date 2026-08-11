@@ -310,17 +310,42 @@ static NSString *LookinAppInfoMacHostLocalizedName(void) {
 #endif
 }
 
-+ (LookinImage *)screenshotImage {
-    LookinWindow *window = [LKS_MultiplatformAdapter keyWindow];
 #if TARGET_OS_OSX
-    // macOS 上当应用失去焦点或处于后台时 keyWindow 为 nil。
-    // 回退到第一个可见窗口（优先 mainWindow，其次任意已排序的窗口）。
-    if (!window) {
-        window = [NSApplication sharedApplication].mainWindow;
++ (LookinWindow *)_lookinScreenshotWindow {
+    LookinWindow *window = [LKS_MultiplatformAdapter keyWindow];
+    if (window) {
+        return window;
     }
-    if (!window) {
-        window = [NSApplication sharedApplication].windows.firstObject;
+
+    window = [NSApplication sharedApplication].mainWindow;
+    if (window) {
+        return window;
     }
+
+    // Background apps have neither a key nor main window. NSStatusBarWindow is
+    // often first in NSApplication.windows, so choose the largest visible UI window.
+    LookinWindow *largestVisibleWindow = nil;
+    CGFloat largestVisibleWindowArea = 0;
+    for (NSWindow *candidate in [NSApplication sharedApplication].windows) {
+        if (!candidate.isVisible || candidate.isMiniaturized || candidate.alphaValue <= 0) {
+            continue;
+        }
+        NSRect frame = candidate.frame;
+        CGFloat area = frame.size.width * frame.size.height;
+        if (area > largestVisibleWindowArea) {
+            largestVisibleWindow = candidate;
+            largestVisibleWindowArea = area;
+        }
+    }
+    return largestVisibleWindow;
+}
+#endif
+
++ (LookinImage *)screenshotImage {
+#if TARGET_OS_OSX
+    LookinWindow *window = [self _lookinScreenshotWindow];
+#else
+    LookinWindow *window = [LKS_MultiplatformAdapter keyWindow];
 #endif
     if (!window) {
         return nil;
@@ -345,7 +370,7 @@ static NSString *LookinAppInfoMacHostLocalizedName(void) {
 #pragma clang diagnostic ignored "-Wdeprecated-declarations"
     // ScreenCaptureKit replacement is async and prompts for screen recording permission; keep the
     // synchronous CGWindowListCreateImage for capturing our own app window thumbnails.
-    CGImageRef cgImage = CGWindowListCreateImage(CGRectZero, kCGWindowListOptionIncludingWindow, (int)window.windowNumber, kCGWindowImageBoundsIgnoreFraming);
+    CGImageRef cgImage = CGWindowListCreateImage(CGRectNull, kCGWindowListOptionIncludingWindow, (int)window.windowNumber, kCGWindowImageBoundsIgnoreFraming);
 #pragma clang diagnostic pop
     if (!cgImage) {
         return nil;
