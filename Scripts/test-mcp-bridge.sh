@@ -28,6 +28,7 @@ swiftc -parse-as-library "$SEARCH_QUERY" "$SEARCH_QUERY_TEST" -o "$TMPDIR/search
 "$TMPDIR/search-query-test"
 
 # The identifier list needs MCPBridgeFrame.swift alongside it for
+node "$ROOT/Tests/MCP/lookinside-mcp-shim-search-tests.mjs" "$ROOT"
 # LKMCPBridgeJSONValue; that file is Foundation-only, so it compiles here.
 FRAME="$ROOT/LookInside/MCPBridge/MCPBridgeFrame.swift"
 OBJECT_IDENTIFIER_LIST="$ROOT/LookInside/MCPBridge/MCPBridgeObjectIdentifierList.swift"
