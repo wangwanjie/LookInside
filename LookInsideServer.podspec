@@ -1,6 +1,6 @@
 Pod::Spec.new do |spec|
   spec.name = 'LookInsideServer'
-  spec.version = '2.3.10_kg'
+  spec.version = '2.3.10-kg'
   spec.summary = 'Local development pod for the LookInsideServer XCFramework.'
   spec.description = <<-DESC
     Binary CocoaPods wrapper for LookInsideServer.xcframework used in local
