@@ -29,6 +29,8 @@ const bridgeMethods = {
   hierarchy_read: "hierarchy.read",
   hierarchy_find: "hierarchy.find",
   hierarchy_reload: "hierarchy.reload",
+  screenshot_read: "screenshot.read",
+  selectors_list: "selectors.list",
   attributes_read: "attributes.read",
   details_read: "details.read",
   invoke_method: "invoke.method",
@@ -85,6 +87,42 @@ const tools = [
       required: ["targetIdentifier"],
       properties: {
         targetIdentifier: { type: "string" },
+      },
+    },
+  },
+  {
+    name: "screenshot_read",
+    description: "Capture a live screenshot of one object in the inspected app. Omit objectIdentifier to capture the key window. Group mode includes descendants; solo mode captures only the object itself.",
+    inputSchema: {
+      type: "object",
+      additionalProperties: false,
+      required: ["targetIdentifier"],
+      properties: {
+        targetIdentifier: { type: "string" },
+        objectIdentifier: { type: "string" },
+        mode: { type: "string", enum: ["solo", "group"], default: "group" },
+        maximumPixelDimension: { type: "integer", minimum: 16, maximum: 4096, default: 1024 },
+      },
+    },
+  },
+  {
+    name: "selectors_list",
+    description: "List Objective-C selectors supported by a class or live object. Use nameFilter to avoid returning a large unfiltered method table.",
+    inputSchema: {
+      type: "object",
+      additionalProperties: false,
+      required: ["targetIdentifier"],
+      anyOf: [
+        { required: ["className"] },
+        { required: ["objectIdentifier"] },
+      ],
+      properties: {
+        targetIdentifier: { type: "string" },
+        className: { type: "string", minLength: 1 },
+        objectIdentifier: { type: "string" },
+        includeArguments: { type: "boolean", default: false },
+        nameFilter: { type: "string" },
+        limit: { type: "integer", minimum: 1, maximum: 2000, default: 200 },
       },
     },
   },

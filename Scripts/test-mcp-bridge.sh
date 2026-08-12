@@ -28,6 +28,8 @@ swiftc -parse-as-library "$SEARCH_QUERY" "$SEARCH_QUERY_TEST" -o "$TMPDIR/search
 "$TMPDIR/search-query-test"
 
 node "$ROOT/Tests/MCP/lookinside-mcp-shim-search-tests.mjs" "$ROOT"
+node "$ROOT/Tests/MCP/lookinside-mcp-shim-screenshot-tests.mjs" "$ROOT"
+node "$ROOT/Tests/MCP/lookinside-mcp-shim-selectors-tests.mjs" "$ROOT"
 
 # The identifier list needs LKMCPBridgeFrame.swift alongside it for
 # LKMCPBridgeJSONValue; that file is Foundation-only, so it compiles here.
