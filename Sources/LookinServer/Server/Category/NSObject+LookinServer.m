@@ -22,6 +22,7 @@
         unsigned long oid = [[LKS_ObjectRegistry sharedInstance] addObject:self];
         self.lks_oid = oid;
     }
+    [[LKS_ObjectRegistry sharedInstance] retainObjectForCurrentHierarchySnapshot:self oid:self.lks_oid];
     return self.lks_oid;
 }
 

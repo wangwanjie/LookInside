@@ -22,6 +22,7 @@
 #import "LKS_CustomAttrModificationHandler.h"
 #import "LKS_AttrModificationPatchHandler.h"
 #import "LKS_HierarchyDetailsHandler.h"
+#import "LKS_ObjectRegistry.h"
 #import "LookinServerDefines.h"
 #import "LookinHierarchyInfo+LookinServer.h"
 #import "UIImage+LookinServer.h"
@@ -56,6 +57,10 @@
             @(LookinPush_CanceHierarchyDetails),
         ]];
         _activeDetailHandlers = [NSMutableSet set];
+        [[NSNotificationCenter defaultCenter] addObserver:self
+                                                 selector:@selector(_handleConnectionDidEnd:)
+                                                     name:LKS_ConnectionDidEndNotificationName
+                                                   object:nil];
     }
     return self;
 }
@@ -98,7 +103,15 @@
 
     if (requestType == LookinRequestTypeHierarchy) {
         NSString *clientVersion = [object isKindOfClass:[NSDictionary class]] ? object[@"clientVersion"] : nil;
-        [self _respondWithData:[LookinHierarchyInfo staticInfoWithLookinVersion:clientVersion] requestType:requestType tag:tag];
+        LKS_ObjectRegistry *objectRegistry = [LKS_ObjectRegistry sharedInstance];
+        [objectRegistry beginHierarchySnapshot];
+        LookinHierarchyInfo *hierarchyInfo = nil;
+        @try {
+            hierarchyInfo = [LookinHierarchyInfo staticInfoWithLookinVersion:clientVersion];
+        } @finally {
+            [objectRegistry endHierarchySnapshot];
+        }
+        [self _respondWithData:hierarchyInfo requestType:requestType tag:tag];
         return;
     }
 
@@ -255,6 +268,10 @@
     }
 
     [self _respondWithError:LookinErr_Inner requestType:requestType tag:tag];
+}
+
+- (void)_handleConnectionDidEnd:(NSNotification *)notification {
+    [[LKS_ObjectRegistry sharedInstance] discardHierarchySnapshot];
 }
 
 @end

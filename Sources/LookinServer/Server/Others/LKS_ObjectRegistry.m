@@ -13,6 +13,8 @@
 @interface LKS_ObjectRegistry ()
 
 @property(nonatomic, strong) NSPointerArray *data;
+@property(nonatomic, strong) NSMutableDictionary<NSNumber *, NSObject *> *hierarchySnapshotObjects;
+@property(nonatomic, assign) BOOL collectingHierarchySnapshot;
 
 @end
 
@@ -36,6 +38,7 @@
         self.data = [NSPointerArray weakObjectsPointerArray];
         // index 为 0 用 Null 填充
         self.data.count = 1;
+        self.hierarchySnapshotObjects = [NSMutableDictionary dictionary];
     }
     return self;
 }
@@ -54,6 +57,39 @@
     }
     id object = [self.data pointerAtIndex:oid];
     return object;
+}
+
+- (void)beginHierarchySnapshot {
+    [self.hierarchySnapshotObjects removeAllObjects];
+    self.collectingHierarchySnapshot = YES;
+}
+
+- (void)endHierarchySnapshot {
+    self.collectingHierarchySnapshot = NO;
+}
+
+- (void)discardHierarchySnapshot {
+    self.collectingHierarchySnapshot = NO;
+    [self.hierarchySnapshotObjects removeAllObjects];
+}
+
+- (void)retainObjectForCurrentHierarchySnapshot:(NSObject *)object oid:(unsigned long)oid {
+    if (!self.collectingHierarchySnapshot || !object || oid == 0) {
+        return;
+    }
+    self.hierarchySnapshotObjects[@(oid)] = object;
+}
+
+- (NSDictionary<NSNumber *, NSObject *> *)consumeHierarchySnapshotObjectsWithOids:(NSArray<NSNumber *> *)oids {
+    NSMutableDictionary<NSNumber *, NSObject *> *objects = [NSMutableDictionary dictionary];
+    for (NSNumber *oid in oids) {
+        NSObject *object = self.hierarchySnapshotObjects[oid];
+        if (object) {
+            objects[oid] = object;
+            [self.hierarchySnapshotObjects removeObjectForKey:oid];
+        }
+    }
+    return objects.copy;
 }
 
 @end

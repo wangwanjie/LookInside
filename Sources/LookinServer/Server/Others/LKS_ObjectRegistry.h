@@ -17,6 +17,21 @@
 
 - (NSObject *)objectWithOid:(unsigned long)oid;
 
+/// Starts replacing the retained objects associated with the latest hierarchy response.
+- (void)beginHierarchySnapshot;
+
+/// Stops collecting objects for the hierarchy currently being built.
+- (void)endHierarchySnapshot;
+
+/// Releases all objects retained for the current hierarchy.
+- (void)discardHierarchySnapshot;
+
+/// Keeps an object alive between the hierarchy response and its detail request.
+- (void)retainObjectForCurrentHierarchySnapshot:(NSObject *)object oid:(unsigned long)oid;
+
+/// Transfers requested objects to a detail handler and removes them from the snapshot.
+- (NSDictionary<NSNumber *, NSObject *> *)consumeHierarchySnapshotObjectsWithOids:(NSArray<NSNumber *> *)oids;
+
 @end
 
 #endif /* SHOULD_COMPILE_LOOKIN_SERVER */

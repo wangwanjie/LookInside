@@ -19,6 +19,7 @@
 #import "NSValue+Lookin.h"
 #import "NSObject+LookinServer.h"
 #import "CALayer+LookinServer.h"
+#import "LKS_ObjectRegistry.h"
 #if TARGET_OS_IPHONE
 #import "UIWindowScene+LookinServer.h"
 #endif
@@ -30,6 +31,7 @@
 
 @property(nonatomic, copy) LKS_HierarchyDetailsHandler_ProgressBlock progressBlock;
 @property(nonatomic, copy) LKS_HierarchyDetailsHandler_FinishBlock finishBlock;
+@property(nonatomic, strong) NSDictionary<NSNumber *, NSObject *> *retainedObjectsByOid;
 
 @end
 
@@ -57,6 +59,14 @@
     self.progressBlock = progressBlock;
     self.finishBlock = finishBlock;
 
+    NSMutableArray<NSNumber *> *taskOids = [NSMutableArray array];
+    for (LookinStaticAsyncUpdateTasksPackage *package in packages) {
+        for (LookinStaticAsyncUpdateTask *task in package.tasks) {
+            [taskOids addObject:@(task.oid)];
+        }
+    }
+    self.retainedObjectsByOid = [[LKS_ObjectRegistry sharedInstance] consumeHierarchySnapshotObjectsWithOids:taskOids];
+
     [LookinView lks_rebuildGlobalInvolvedRawConstraints];
 
     [self _dequeueAndHandlePackage];
@@ -64,12 +74,14 @@
 
 - (void)cancel {
     [self.taskPackages removeAllObjects];
+    self.retainedObjectsByOid = nil;
 }
 
 - (void)_dequeueAndHandlePackage {
     dispatch_async(dispatch_get_main_queue(), ^{
         LookinStaticAsyncUpdateTasksPackage *package = self.taskPackages.firstObject;
         if (!package) {
+            self.retainedObjectsByOid = nil;
             self.finishBlock();
             return;
         }
@@ -77,7 +89,7 @@
             LookinDisplayItemDetail *itemDetail = [LookinDisplayItemDetail new];
             itemDetail.displayItemOid = task.oid;
 
-            id object = [NSObject lks_objectWithOid:task.oid];
+            id object = self.retainedObjectsByOid[@(task.oid)] ?: [NSObject lks_objectWithOid:task.oid];
 
 #if TARGET_OS_OSX
             // 处理所有 NSView 对象（包括 layer-backed 的 SwiftUI 视图）

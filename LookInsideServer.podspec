@@ -11,7 +11,7 @@ Pod::Spec.new do |spec|
   spec.author = { 'HenryLi' => 'henryli@tencentmusic.com' }
   spec.source = { :http => "http://172.17.13.138/ftpfanxingroot/#{spec.name}/#{spec.version}.zip", :type => "zip" }
 
-  spec.ios.deployment_target = '13.0'
+  spec.ios.deployment_target = '12.0'
   spec.osx.deployment_target = '14.0'
 
   spec.vendored_frameworks = 'LookInsideServer.xcframework'
