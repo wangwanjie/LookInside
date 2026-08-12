@@ -9,6 +9,7 @@
 //
 
 #import "LKS_HierarchyDisplayItemsMaker.h"
+#import "LKS_HierarchyGeometry.h"
 #import "LookinDisplayItem.h"
 #import "LKS_TraceManager.h"
 #import "LKS_AttrGroupsMaker.h"
@@ -187,13 +188,13 @@
     if (hostView && hostView.superview) {
         layerFrame = [hostView.superview convertRect:layerFrame toView:nil];
     }
-    if ([self validateFrame:layerFrame]) {
-    item.frame = layer.frame;
+    if (LKSHierarchyRectIsValid(layerFrame) && LKSHierarchyRectIsValid(layer.frame)) {
+        item.frame = layer.frame;
     } else {
         NSLog(@"LookinServer - The layer frame(%@) seems really weird. Lookin will ignore it to avoid potential render error in Lookin.", NSStringFromCGRect(layer.frame));
         item.frame = CGRectZero;
     }
-    item.bounds = layer.bounds;
+    item.bounds = LKSHierarchyRectIsValid(layer.bounds) ? layer.bounds : CGRectZero;
     if (hasScreenshots) {
         item.soloScreenshot = [layer lks_soloScreenshotWithLowQuality:lowQuality];
         item.groupScreenshot = [layer lks_groupScreenshotWithLowQuality:lowQuality];
@@ -355,13 +356,13 @@
     if (view.superview) {
         viewFrame = [view.superview convertRect:viewFrame toView:nil];
     }
-    if ([self validateFrame:viewFrame]) {
+    if (LKSHierarchyRectIsValid(viewFrame) && LKSHierarchyRectIsValid(view.frame)) {
         item.frame = view.frame;
     } else {
         NSLog(@"LookinServer - The layer frame(%@) seems really weird. Lookin will ignore it to avoid potential render error in Lookin.", NSStringFromCGRect(view.frame));
         item.frame = CGRectZero;
     }
-    item.bounds = view.bounds;
+    item.bounds = LKSHierarchyRectIsValid(view.bounds) ? view.bounds : CGRectZero;
     item.flipped = view.isFlipped;
     if (hasScreenshots) {
         item.soloScreenshot = [view lks_soloScreenshotWithLowQuality:lowQuality];
@@ -532,22 +533,6 @@
 }
 #endif
 
-
-+ (BOOL)validateFrame:(CGRect)frame {
-    return !CGRectIsNull(frame) && !CGRectIsInfinite(frame) && ![self cgRectIsNaN:frame] && ![self cgRectIsInf:frame] && ![self cgRectIsUnreasonable:frame];
-}
-
-+ (BOOL)cgRectIsNaN:(CGRect)rect {
-    return isnan(rect.origin.x) || isnan(rect.origin.y) || isnan(rect.size.width) || isnan(rect.size.height);
-}
-
-+ (BOOL)cgRectIsInf:(CGRect)rect {
-    return isinf(rect.origin.x) || isinf(rect.origin.y) || isinf(rect.size.width) || isinf(rect.size.height);
-}
-
-+ (BOOL)cgRectIsUnreasonable:(CGRect)rect {
-    return ABS(rect.origin.x) > 100000 || ABS(rect.origin.y) > 100000 || rect.size.width < 0 || rect.size.height < 0 || rect.size.width > 100000 || rect.size.height > 100000;
-}
 
 @end
 

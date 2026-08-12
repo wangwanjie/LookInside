@@ -61,6 +61,7 @@ run_command "dashboard feature tests" bash Scripts/test-dashboard-features.sh
 run_command "native macOS app preview tests" bash Scripts/test-macos-app-preview.sh
 run_command "LookinServer method return-type tests" bash Scripts/test-lookinserver-method-return-type.sh
 run_command "LookinServer object registry snapshot tests" bash Scripts/test-lookinserver-object-registry.sh
+run_command "LookinServer hierarchy geometry tests" bash Scripts/test-lookinserver-hierarchy-geometry.sh
 run_command "sync derived source" bash Scripts/sync-derived-source.sh
 run_swift_build "swift build" build
 run_swift_build "swift build target=LookinServer" build -c debug --target LookinServer

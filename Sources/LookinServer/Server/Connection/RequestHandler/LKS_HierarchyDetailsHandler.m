@@ -20,6 +20,7 @@
 #import "NSObject+LookinServer.h"
 #import "CALayer+LookinServer.h"
 #import "LKS_ObjectRegistry.h"
+#import "LKS_HierarchyGeometry.h"
 #if TARGET_OS_IPHONE
 #import "UIWindowScene+LookinServer.h"
 #endif
@@ -143,8 +144,10 @@
                     [self.attrGroupsSyncedOids addObject:@(task.oid)];
                 }
                 if (task.needBasisVisualInfo) {
-                    itemDetail.frameValue = [NSValue valueWithCGRect:view.frame];
-                    itemDetail.boundsValue = [NSValue valueWithCGRect:view.bounds];
+                    if (LKSHierarchyRectIsValid(view.frame) && LKSHierarchyRectIsValid(view.bounds)) {
+                        itemDetail.frameValue = [NSValue valueWithCGRect:view.frame];
+                        itemDetail.boundsValue = [NSValue valueWithCGRect:view.bounds];
+                    }
                     itemDetail.hiddenValue = @(view.hidden);
                     itemDetail.alphaValue = @(view.layer ? view.layer.opacity : 1);
                 }
@@ -173,8 +176,10 @@
                 if (task.needBasisVisualInfo) {
                     CGRect windowBounds = window.frame;
                     windowBounds.origin = CGPointZero;
-                    itemDetail.frameValue = [NSValue valueWithCGRect:windowBounds];
-                    itemDetail.boundsValue = [NSValue valueWithCGRect:windowBounds];
+                    if (LKSHierarchyRectIsValid(windowBounds)) {
+                        itemDetail.frameValue = [NSValue valueWithCGRect:windowBounds];
+                        itemDetail.boundsValue = [NSValue valueWithCGRect:windowBounds];
+                    }
                     itemDetail.hiddenValue = @(!window.visible);
                     itemDetail.alphaValue = @(window.alphaValue);
                 }
@@ -235,8 +240,10 @@
                 [self.attrGroupsSyncedOids addObject:@(task.oid)];
             }
             if (task.needBasisVisualInfo) {
-                itemDetail.frameValue = [NSValue valueWithCGRect:layer.frame];
-                itemDetail.boundsValue = [NSValue valueWithCGRect:layer.bounds];
+                if (LKSHierarchyRectIsValid(layer.frame) && LKSHierarchyRectIsValid(layer.bounds)) {
+                    itemDetail.frameValue = [NSValue valueWithCGRect:layer.frame];
+                    itemDetail.boundsValue = [NSValue valueWithCGRect:layer.bounds];
+                }
                 itemDetail.hiddenValue = [NSNumber numberWithBool:layer.isHidden];
                 itemDetail.alphaValue = @(layer.opacity);
             }
