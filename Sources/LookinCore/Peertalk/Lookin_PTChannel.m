@@ -323,6 +323,58 @@ static const uint8_t kUserInfoKey;
   if (callback) callback(err, ptAddr);
 }
 
+- (void)connectToPort:(in_port_t)port IPv6Address:(struct in6_addr)address callback:(void(^)(NSError *error, Lookin_PTAddress *address))callback {
+  assert(protocol_ != NULL);
+  if (connState_ != kConnStateNone) {
+    if (callback) callback([NSError errorWithDomain:NSPOSIXErrorDomain code:EPERM userInfo:nil], nil);
+    return;
+  }
+  connState_ = kConnStateConnecting;
+
+  dispatch_fd_t fd = socket(AF_INET6, SOCK_STREAM, 0);
+  if (fd == -1) {
+    if (callback) callback([[NSError alloc] initWithDomain:NSPOSIXErrorDomain code:errno userInfo:nil], nil);
+    return;
+  }
+
+  struct sockaddr_in6 addr;
+  bzero((char *)&addr, sizeof(addr));
+  addr.sin6_len = sizeof(addr);
+  addr.sin6_family = AF_INET6;
+  addr.sin6_port = htons(port);
+  addr.sin6_addr = address;
+
+  int on = 1;
+  setsockopt(fd, SOL_SOCKET, SO_NOSIGPIPE, &on, sizeof(on));
+
+  if (connect(fd, (const struct sockaddr *)&addr, addr.sin6_len) == -1) {
+    int error = errno;
+    close(fd);
+    if (callback) callback([[NSError alloc] initWithDomain:NSPOSIXErrorDomain code:error userInfo:nil], nil);
+    return;
+  }
+
+  dispatch_io_t dispatchChannel = dispatch_io_create(DISPATCH_IO_STREAM, fd, protocol_.queue, ^(int error) {
+    close(fd);
+    if (self->delegateFlags_ & kDelegateFlagImplements_ioFrameChannel_didEndWithError) {
+      NSError *err = error == 0 ? self->endError_ : [[NSError alloc] initWithDomain:NSPOSIXErrorDomain code:error userInfo:nil];
+      [self->delegate_ ioFrameChannel:self didEndWithError:err];
+      self->endError_ = nil;
+    }
+  });
+
+  if (!dispatchChannel) {
+    close(fd);
+    if (callback) callback([[NSError alloc] initWithDomain:@"PTError" code:0 userInfo:nil], nil);
+    return;
+  }
+
+  NSError *error = nil;
+  Lookin_PTAddress *ptAddr = [[Lookin_PTAddress alloc] initWithSockaddr:(struct sockaddr_storage *)&addr];
+  [self startReadingFromConnectedChannel:dispatchChannel error:&error];
+  if (callback) callback(error, ptAddr);
+}
+
 
 #pragma mark - Listening and serving
 
@@ -399,9 +451,77 @@ static const uint8_t kUserInfoKey;
   if (callback) callback(nil);
 }
 
+- (void)listenOnPort:(in_port_t)port IPv6Address:(struct in6_addr)address callback:(void(^)(NSError *error))callback {
+  assert(dispatchObj_source_ == nil);
+
+  dispatch_fd_t fd = socket(AF_INET6, SOCK_STREAM, 0);
+  if (fd == -1) {
+    if (callback) callback([NSError errorWithDomain:NSPOSIXErrorDomain code:errno userInfo:nil]);
+    return;
+  }
+
+  int on = 1;
+  if (setsockopt(fd, SOL_SOCKET, SO_REUSEADDR, &on, sizeof(on)) == -1) {
+    close(fd);
+    if (callback) callback([NSError errorWithDomain:NSPOSIXErrorDomain code:errno userInfo:nil]);
+    return;
+  }
+
+  // Keep the established IPv4 usbmux path working through IPv4-mapped IPv6
+  // addresses while allowing the CoreDevice tunnel's IPv6 endpoint.
+  int v6Only = 0;
+  if (setsockopt(fd, IPPROTO_IPV6, IPV6_V6ONLY, &v6Only, sizeof(v6Only)) == -1) {
+    close(fd);
+    if (callback) callback([NSError errorWithDomain:NSPOSIXErrorDomain code:errno userInfo:nil]);
+    return;
+  }
+
+  if (fcntl(fd, F_SETFL, O_NONBLOCK) == -1) {
+    close(fd);
+    if (callback) callback([NSError errorWithDomain:NSPOSIXErrorDomain code:errno userInfo:nil]);
+    return;
+  }
+
+  struct sockaddr_in6 addr;
+  bzero((char *)&addr, sizeof(addr));
+  addr.sin6_family = AF_INET6;
+  addr.sin6_port = htons(port);
+  addr.sin6_addr = address;
+
+  if (bind(fd, (struct sockaddr *)&addr, sizeof(addr)) != 0) {
+    close(fd);
+    if (callback) callback([NSError errorWithDomain:NSPOSIXErrorDomain code:errno userInfo:nil]);
+    return;
+  }
+
+  if (listen(fd, 512) != 0) {
+    close(fd);
+    if (callback) callback([NSError errorWithDomain:NSPOSIXErrorDomain code:errno userInfo:nil]);
+    return;
+  }
+
+  [self setDispatchSource:dispatch_source_create(DISPATCH_SOURCE_TYPE_READ, fd, 0, protocol_.queue)];
+  dispatch_source_set_event_handler(dispatchObj_source_, ^{
+    unsigned long nconns = dispatch_source_get_data(self->dispatchObj_source_);
+    while ([self acceptIncomingConnection:fd] && --nconns);
+  });
+  dispatch_source_set_cancel_handler(dispatchObj_source_, ^{
+    self->dispatchObj_source_ = nil;
+    close(fd);
+    if (self->delegateFlags_ & kDelegateFlagImplements_ioFrameChannel_didEndWithError) {
+      [self->delegate_ ioFrameChannel:self didEndWithError:self->endError_];
+      self->endError_ = nil;
+    }
+  });
+
+  dispatch_resume(dispatchObj_source_);
+  connState_ = kConnStateListening;
+  if (callback) callback(nil);
+}
+
 
 - (BOOL)acceptIncomingConnection:(dispatch_fd_t)serverSocketFD {
-  struct sockaddr_in addr;
+  struct sockaddr_storage addr;
   socklen_t addrLen = sizeof(addr);
   dispatch_fd_t clientSocketFD = accept(serverSocketFD, (struct sockaddr*)&addr, &addrLen);
   

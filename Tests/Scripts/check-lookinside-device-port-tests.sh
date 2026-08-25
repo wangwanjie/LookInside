@@ -58,6 +58,14 @@ fi
 exit 2
 EOF
 
+    cat >"$fake_bin/ideviceinfo" <<'EOF'
+#!/usr/bin/env bash
+if [ "${FAKE_IDEVICEINFO_STATUS:-0}" -eq 0 ]; then
+    printf '%s\n' "${FAKE_IDEVICE_NAME:-Fake iPhone}"
+fi
+exit "${FAKE_IDEVICEINFO_STATUS:-0}"
+EOF
+
     cat >"$fake_bin/xcrun" <<'EOF'
 #!/usr/bin/env bash
 printf '%s\n' "${FAKE_COREDEVICE_OUTPUT:-CoreDevice fixture}"
@@ -91,7 +99,7 @@ fi
 exit 1
 EOF
 
-    chmod +x "$fake_bin/idevice_id" "$fake_bin/xcrun" "$fake_bin/iproxy" "$fake_bin/nc"
+    chmod +x "$fake_bin/idevice_id" "$fake_bin/ideviceinfo" "$fake_bin/xcrun" "$fake_bin/iproxy" "$fake_bin/nc"
     printf '%s\n' "$fake_bin"
 }
 
@@ -134,6 +142,17 @@ test_no_device() {
     esac
 }
 
+test_coredevice_only_device_explains_iproxy_limitation() {
+    FAKE_DEVICE_IDS=""
+    FAKE_COREDEVICE_OUTPUT="Henry的16e  00008140-000D59423C0A801C.coredevice.local  connected  iPhone 16e"
+    export FAKE_DEVICE_IDS FAKE_COREDEVICE_OUTPUT
+    run_script coredevice-only-device
+    assert_status 1 "$RUN_STATUS" "CoreDevice-only device fails without usbmux"
+    assert_contains "$RUN_OUTPUT" "CoreDevice-connected iPhone" "CoreDevice-only device is identified"
+    assert_contains "$RUN_OUTPUT" "CoreDevice-compatible port forwarder" "CoreDevice-only device explains forwarding limitation"
+    unset FAKE_COREDEVICE_OUTPUT
+}
+
 test_multiple_devices_require_udid() {
     FAKE_DEVICE_IDS="$(printf 'device-a\ndevice-b\n')"
     export FAKE_DEVICE_IDS
@@ -148,6 +167,26 @@ test_unknown_udid() {
     run_script unknown-udid --udid device-b
     assert_status 1 "$RUN_STATUS" "unknown UDID fails"
     assert_contains "$RUN_OUTPUT" "device-b" "unknown UDID is reported"
+}
+
+test_stale_usbmux_device_is_rejected() {
+    FAKE_DEVICE_IDS="device-a"
+    FAKE_IDEVICEINFO_STATUS=1
+    export FAKE_DEVICE_IDS FAKE_IDEVICEINFO_STATUS
+    run_script stale-usbmux-device
+    assert_status 1 "$RUN_STATUS" "stale usbmux device fails"
+    assert_contains "$RUN_OUTPUT" "no longer responds" "stale usbmux device is explained"
+    unset FAKE_IDEVICEINFO_STATUS
+}
+
+test_mixed_transports_require_explicit_usbmux_selection() {
+    FAKE_DEVICE_IDS="device-a"
+    FAKE_COREDEVICE_OUTPUT="Henry的16e  00008140-000D59423C0A801C.coredevice.local  connected  iPhone 16e  00008140-000D59423C0A801C"
+    export FAKE_DEVICE_IDS FAKE_COREDEVICE_OUTPUT
+    run_script mixed-transports
+    assert_status 1 "$RUN_STATUS" "mixed CoreDevice and usbmux devices fail without selection"
+    assert_contains "$RUN_OUTPUT" "Multiple devices are connected through different transports" "mixed transports are explained"
+    unset FAKE_COREDEVICE_OUTPUT
 }
 
 test_single_open_port() {
@@ -245,8 +284,11 @@ test_iproxy_is_cleaned_up_after_failure() {
 
 test_help
 test_no_device
+test_coredevice_only_device_explains_iproxy_limitation
 test_multiple_devices_require_udid
 test_unknown_udid
+test_stale_usbmux_device_is_rejected
+test_mixed_transports_require_explicit_usbmux_selection
 test_single_open_port
 test_all_ports_closed
 test_explicit_udid_succeeds

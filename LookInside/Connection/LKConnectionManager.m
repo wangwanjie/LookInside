@@ -13,9 +13,12 @@
 #import "LKPreferenceManager.h"
 #import "LookinAppInfo.h"
 #import "LKConnectionRequest.h"
+#import "LKCoreDeviceTunnelDiscovery.h"
 #import "LKNavigationManager.h"
 #import "LKLaunchWindowController.h"
 #import "LookInside-Swift.h"
+
+#import <arpa/inet.h>
 
 static NSIndexSet * PushFrameTypeList(void) {
     static NSIndexSet *list;
@@ -153,11 +156,30 @@ static NSTimeInterval LKRequestTimeoutIntervalForRequestType(unsigned int reques
 
 @end
 
+@interface LKCoreDeviceConnectionPort : NSObject
+
+@property(nonatomic, assign) int portNumber;
+@property(nonatomic, copy) NSString *deviceIdentifier;
+@property(nonatomic, copy) NSString *deviceName;
+@property(nonatomic, copy) NSString *tunnelIPv6Address;
+@property(nonatomic, strong) Lookin_PTChannel *connectedChannel;
+
+@end
+
+@implementation LKCoreDeviceConnectionPort
+
+- (NSString *)description {
+    return [NSString stringWithFormat:@"number:%@, device:%@, address:%@, connectedChannel:%@", @(self.portNumber), self.deviceName, self.tunnelIPv6Address, self.connectedChannel];
+}
+
+@end
+
 @interface LKConnectionManager () <Lookin_PTChannelDelegate>
 
 @property(nonatomic, copy) NSArray<LKSimulatorConnectionPort *> *allSimulatorPorts;
 @property(nonatomic, copy) NSArray<LKMacConnectionPort *> *allMacPorts;
 @property(nonatomic, strong) NSMutableArray<LKUSBConnectionPort *> *allUSBPorts;
+@property(nonatomic, strong) NSMutableArray<LKCoreDeviceConnectionPort *> *allCoreDevicePorts;
 
 @end
 
@@ -200,6 +222,7 @@ static NSTimeInterval LKRequestTimeoutIntervalForRequestType(unsigned int reques
             ports;
         });
         self.allUSBPorts = [NSMutableArray array];
+        self.allCoreDevicePorts = [NSMutableArray array];
         
         [self _startListeningForUSBDevices];
         [NSNotificationCenter.defaultCenter addObserverForName:LKSwiftUISupportGatekeeper.activationStateDidChangeNotificationName object:nil queue:nil usingBlock:^(__unused NSNotification *note) {
@@ -212,12 +235,24 @@ static NSTimeInterval LKRequestTimeoutIntervalForRequestType(unsigned int reques
 #pragma mark - Ports Connect
 
 - (RACSignal *)tryToConnectAllPorts {
-    return [[RACSignal zip:@[[self _tryToConnectAllSimulatorPorts],
-                            [self _tryToConnectAllMacPorts],
-                            [self _tryToConnectAllUSBDevices]]] map:^id _Nullable(RACTuple * _Nullable value) {
-        RACTupleUnpack(NSArray<Lookin_PTChannel *> *simulatorChannels, NSArray<Lookin_PTChannel *> *macChannels, NSArray<Lookin_PTChannel *> *usbChannels) = value;
-        NSArray *connectedChannels = [[simulatorChannels arrayByAddingObjectsFromArray:macChannels] arrayByAddingObjectsFromArray:usbChannels];
-        return connectedChannels;
+    RACSignal *discoverCoreDeviceTunnels = [RACSignal createSignal:^RACDisposable * _Nullable(id<RACSubscriber>  _Nonnull subscriber) {
+        [LKCoreDeviceTunnelDiscovery fetchConnectedTunnelsWithCompletion:^(NSArray<LKCoreDeviceTunnel *> *tunnels) {
+            [subscriber sendNext:tunnels];
+            [subscriber sendCompleted];
+        }];
+        return nil;
+    }];
+
+    return [discoverCoreDeviceTunnels flattenMap:^RACSignal * _Nullable(NSArray<LKCoreDeviceTunnel *> *tunnels) {
+        [self _updateCoreDevicePortsWithTunnels:tunnels];
+        return [[RACSignal zip:@[[self _tryToConnectAllSimulatorPorts],
+                                [self _tryToConnectAllMacPorts],
+                                [self _tryToConnectAllUSBDevices],
+                                [self _tryToConnectAllCoreDevicePorts]]] map:^id _Nullable(RACTuple * _Nullable value) {
+            RACTupleUnpack(NSArray<Lookin_PTChannel *> *simulatorChannels, NSArray<Lookin_PTChannel *> *macChannels, NSArray<Lookin_PTChannel *> *usbChannels, NSArray<Lookin_PTChannel *> *coreDeviceChannels) = value;
+            NSArray *connectedChannels = [[simulatorChannels arrayByAddingObjectsFromArray:macChannels] arrayByAddingObjectsFromArray:usbChannels];
+            return [connectedChannels arrayByAddingObjectsFromArray:coreDeviceChannels];
+        }];
     }];
 }
 
@@ -322,6 +357,62 @@ static NSTimeInterval LKRequestTimeoutIntervalForRequestType(unsigned int reques
     }];
 }
 
+- (void)_updateCoreDevicePortsWithTunnels:(NSArray<LKCoreDeviceTunnel *> *)tunnels {
+    NSMutableDictionary<NSString *, LKCoreDeviceConnectionPort *> *existingPorts = [NSMutableDictionary dictionary];
+    for (LKCoreDeviceConnectionPort *port in self.allCoreDevicePorts) {
+        NSString *key = [self _coreDevicePortKeyForIdentifier:port.deviceIdentifier portNumber:port.portNumber];
+        existingPorts[key] = port;
+    }
+
+    NSMutableArray<LKCoreDeviceConnectionPort *> *updatedPorts = [NSMutableArray array];
+    NSMutableSet<NSString *> *retainedKeys = [NSMutableSet set];
+    for (LKCoreDeviceTunnel *tunnel in tunnels) {
+        for (int portNumber = LookinUSBDeviceIPv4PortNumberStart; portNumber <= LookinUSBDeviceIPv4PortNumberEnd; portNumber++) {
+            NSString *key = [self _coreDevicePortKeyForIdentifier:tunnel.identifier portNumber:portNumber];
+            LKCoreDeviceConnectionPort *port = existingPorts[key];
+            if (port && [port.tunnelIPv6Address isEqualToString:tunnel.IPv6Address]) {
+                port.deviceName = tunnel.name;
+            } else {
+                [port.connectedChannel close];
+                port = [LKCoreDeviceConnectionPort new];
+                port.portNumber = portNumber;
+                port.deviceIdentifier = tunnel.identifier;
+                port.deviceName = tunnel.name;
+                port.tunnelIPv6Address = tunnel.IPv6Address;
+            }
+            [updatedPorts addObject:port];
+            [retainedKeys addObject:key];
+        }
+    }
+
+    [existingPorts enumerateKeysAndObjectsUsingBlock:^(NSString *key, LKCoreDeviceConnectionPort *port, BOOL *stop) {
+        if (![retainedKeys containsObject:key]) {
+            [port.connectedChannel close];
+        }
+    }];
+    self.allCoreDevicePorts = updatedPorts;
+}
+
+- (NSString *)_coreDevicePortKeyForIdentifier:(NSString *)identifier portNumber:(int)portNumber {
+    return [NSString stringWithFormat:@"%@:%d", identifier, portNumber];
+}
+
+- (RACSignal *)_tryToConnectAllCoreDevicePorts {
+    if (!self.allCoreDevicePorts.count) {
+        return [RACSignal return:@[]];
+    }
+    NSArray<RACSignal *> *tries = [self.allCoreDevicePorts lookin_map:^id(NSUInteger idx, LKCoreDeviceConnectionPort *port) {
+        return [[self _connectToCoreDevicePort:port] catch:^RACSignal * _Nonnull(NSError * _Nonnull error) {
+            return [RACSignal return:nil];
+        }];
+    }];
+    return [[RACSignal zip:tries] map:^id _Nullable(RACTuple * _Nullable value) {
+        return [value.allObjects lookin_filter:^BOOL(id obj) {
+            return (obj != [NSNull null]);
+        }];
+    }];
+}
+
 /// 返回的 x 为成功链接的 Lookin_PTChannel
 - (RACSignal *)_connectToUSBPort:(LKUSBConnectionPort *)port {
     return [RACSignal createSignal:^RACDisposable * _Nullable(id<RACSubscriber>  _Nonnull subscriber) {
@@ -344,6 +435,36 @@ static NSTimeInterval LKRequestTimeoutIntervalForRequestType(unsigned int reques
                 [subscriber sendError:error];
             } else {
                 // succ
+                port.connectedChannel = channel;
+                [subscriber sendNext:channel];
+                [subscriber sendCompleted];
+            }
+        }];
+        return nil;
+    }];
+}
+
+- (RACSignal *)_connectToCoreDevicePort:(LKCoreDeviceConnectionPort *)port {
+    return [RACSignal createSignal:^RACDisposable * _Nullable(id<RACSubscriber>  _Nonnull subscriber) {
+        if (port.connectedChannel) {
+            [subscriber sendNext:port.connectedChannel];
+            [subscriber sendCompleted];
+            return nil;
+        }
+
+        struct in6_addr address;
+        if (inet_pton(AF_INET6, port.tunnelIPv6Address.UTF8String, &address) != 1) {
+            NSError *error = [NSError errorWithDomain:NSPOSIXErrorDomain code:EINVAL userInfo:@{NSLocalizedDescriptionKey: NSLocalizedString(@"CoreDevice returned an invalid IPv6 tunnel address.", nil)}];
+            [subscriber sendError:error];
+            return nil;
+        }
+
+        Lookin_PTChannel *channel = [Lookin_PTChannel channelWithDelegate:self];
+        [channel connectToPort:port.portNumber IPv6Address:address callback:^(NSError *error, Lookin_PTAddress *address) {
+            if (error) {
+                [channel close];
+                [subscriber sendError:error];
+            } else {
                 port.connectedChannel = channel;
                 [subscriber sendNext:channel];
                 [subscriber sendCompleted];
@@ -883,6 +1004,11 @@ static NSTimeInterval LKRequestTimeoutIntervalForRequestType(unsigned int reques
         }
     }];
     [self.allUSBPorts enumerateObjectsUsingBlock:^(LKUSBConnectionPort * _Nonnull port, NSUInteger idx, BOOL * _Nonnull stop) {
+        if (port.connectedChannel == channel) {
+            port.connectedChannel = nil;
+        }
+    }];
+    [self.allCoreDevicePorts enumerateObjectsUsingBlock:^(LKCoreDeviceConnectionPort * _Nonnull port, NSUInteger idx, BOOL * _Nonnull stop) {
         if (port.connectedChannel == channel) {
             port.connectedChannel = nil;
         }

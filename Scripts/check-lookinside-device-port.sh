@@ -19,6 +19,10 @@ Usage: Scripts/check-lookinside-device-port.sh [--udid UDID] [--help]
 
 Checks whether one USB-connected iOS device is reachable through usbmux and
 which LookinServer port in 47175-47179 accepts a connection.
+
+This check uses libimobiledevice's usbmux transport. A device shown as
+"connected" by Xcode/CoreDevice but absent from `idevice_id -l` cannot be
+probed by iproxy; the script reports that situation explicitly.
 EOF
 }
 
@@ -66,7 +70,7 @@ while [ "$#" -gt 0 ]; do
     esac
 done
 
-for command_name in xcrun idevice_id iproxy nc; do
+for command_name in xcrun idevice_id ideviceinfo iproxy nc; do
     if ! command -v "$command_name" >/dev/null 2>&1; then
         case "$command_name" in
             idevice_id|iproxy)
@@ -80,16 +84,49 @@ for command_name in xcrun idevice_id iproxy nc; do
 done
 
 printf '%s\n' "CoreDevice devices:"
-if ! xcrun devicectl list devices; then
+coredevice_output=""
+if ! coredevice_output="$(xcrun devicectl list devices --columns '*' 2>&1)"; then
     printf 'WARNING: CoreDevice query failed; continuing with usbmux discovery.\n' >&2
+else
+    printf '%s\n' "$coredevice_output"
 fi
+coredevice_connected="$(printf '%s\n' "$coredevice_output" | awk '/[[:space:]]connected([[:space:]]|$)/')"
+coredevice_connected_udids="$(printf '%s\n' "$coredevice_connected" | grep -Eo '[[:xdigit:]]{8}-[[:xdigit:]]{16}' || true)"
 
 device_ids=()
 while IFS= read -r device_id; do
     [ -n "$device_id" ] && device_ids[${#device_ids[@]}]="$device_id"
 done < <(idevice_id -l)
 
-[ "${#device_ids[@]}" -gt 0 ] || die "No USB iOS device is available through usbmux."
+if [ "${#device_ids[@]}" -eq 0 ]; then
+    if [ -n "$coredevice_connected" ]; then
+        printf '%s\n' "$coredevice_connected" >&2
+        die "A CoreDevice-connected iPhone was found, but it is unavailable through usbmux. This script cannot use iproxy for that device; use a usbmux-visible device or a CoreDevice-compatible port forwarder."
+    fi
+    die "No USB iOS device is available through usbmux."
+fi
+
+coredevice_only_udids=()
+coredevice_only_count=0
+while IFS= read -r coredevice_udid; do
+    [ -n "$coredevice_udid" ] || continue
+    found_in_usbmux=0
+    for device_id in "${device_ids[@]}"; do
+        [ "$device_id" = "$coredevice_udid" ] && found_in_usbmux=1
+    done
+    if [ "$found_in_usbmux" -eq 0 ]; then
+        coredevice_only_udids[$coredevice_only_count]="$coredevice_udid"
+        coredevice_only_count=$((coredevice_only_count + 1))
+    fi
+done <<<"$coredevice_connected_udids"
+
+if [ -z "$requested_udid" ] && [ "$coredevice_only_count" -gt 0 ]; then
+    printf 'CoreDevice-only connected device(s):\n' >&2
+    printf '  %s\n' "${coredevice_only_udids[@]:0:$coredevice_only_count}" >&2
+    printf 'usbmux-visible device(s):\n' >&2
+    printf '  %s\n' "${device_ids[@]}" >&2
+    die "Multiple devices are connected through different transports. Use --udid to select a usbmux-visible device; CoreDevice-only devices cannot be checked with iproxy."
+fi
 
 selected_udid=""
 if [ -n "$requested_udid" ]; then
@@ -99,7 +136,13 @@ if [ -n "$requested_udid" ]; then
             break
         fi
     done
-    [ -n "$selected_udid" ] || die "Requested UDID is not available through usbmux: $requested_udid"
+    if [ -z "$selected_udid" ]; then
+        for ((coredevice_index = 0; coredevice_index < coredevice_only_count; coredevice_index++)); do
+            coredevice_udid="${coredevice_only_udids[$coredevice_index]}"
+            [ "$coredevice_udid" = "$requested_udid" ] && die "Requested UDID is connected through CoreDevice only and cannot be checked with iproxy: $requested_udid"
+        done
+        die "Requested UDID is not available through usbmux: $requested_udid"
+    fi
 elif [ "${#device_ids[@]}" -eq 1 ]; then
     selected_udid="${device_ids[0]}"
 else
@@ -109,6 +152,10 @@ else
 fi
 
 printf 'Selected USB device: %s\n' "$selected_udid"
+if ! selected_device_name="$(ideviceinfo -u "$selected_udid" -k DeviceName 2>&1)"; then
+    die "Selected usbmux device no longer responds: $selected_udid. It may be a stale usbmux entry; the currently connected CoreDevice device cannot be checked with iproxy."
+fi
+printf 'usbmux device name: %s\n' "$selected_device_name"
 
 device_port="$DEVICE_PORT_START"
 while [ "$device_port" -le "$DEVICE_PORT_END" ]; do

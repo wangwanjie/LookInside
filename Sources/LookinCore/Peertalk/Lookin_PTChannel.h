@@ -66,12 +66,22 @@
 // in_addr_t to this function.
 - (void)connectToPort:(in_port_t)port IPv4Address:(in_addr_t)address callback:(void(^)(NSError *error, Lookin_PTAddress *address))callback;
 
+// Connect to a TCP port at an IPv6 address. This is used by the macOS client
+// to reach iOS apps through a CoreDevice developer tunnel.
+- (void)connectToPort:(in_port_t)port IPv6Address:(struct in6_addr)address callback:(void(^)(NSError *error, Lookin_PTAddress *address))callback;
+
 // Listen for connections on port and address, effectively starting a socket
 // server. Provided port must NOT be in network byte order. Provided in_addr_t
 // must NOT be in network byte order.
 // For this to make sense, you should provide a onAccept block handler
 // or a delegate implementing ioFrameChannel:didAcceptConnection:.
 - (void)listenOnPort:(in_port_t)port IPv4Address:(in_addr_t)address callback:(void(^)(NSError *error))callback;
+
+// Listen on an IPv6 address. This is used by LookinServer on modern physical
+// devices so that a CoreDevice developer tunnel can reach the server directly.
+// The listener also accepts IPv4-mapped connections, preserving the existing
+// usbmux/iproxy path.
+- (void)listenOnPort:(in_port_t)port IPv6Address:(struct in6_addr)address callback:(void(^)(NSError *error))callback;
 
 // Send a frame with an optional payload and optional callback.
 // If *callback* is not NULL, the block is invoked when either an error occured

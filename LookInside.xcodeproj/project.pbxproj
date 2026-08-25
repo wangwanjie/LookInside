@@ -120,6 +120,7 @@
 				Connection/LKAppsManager.m,
 				Connection/LKConnectionManager.m,
 				Connection/LKConnectionRequest.m,
+				Connection/LKCoreDeviceTunnelDiscovery.m,
 				Connection/LKInspectableApp.m,
 				Connection/LookinLiveDocument.m,
 				Connection/LookinLiveDocumentController.m,
