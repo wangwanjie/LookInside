@@ -144,6 +144,22 @@ static void LKS_CollectRenderPoisoningSublayers(CALayer *layer, NSMutableArray<C
 }
 #endif
 
+#if TARGET_OS_IPHONE
+/// UIKit's hierarchy snapshot path temporarily reparents a table header/footer's
+/// contentView into a private snapshot window. That violates the invariant that
+/// UITableViewHeaderFooterView.contentView must remain its direct subview and can
+/// raise an NSInternalInconsistencyException. Render these views from the layer
+/// tree instead, including screenshots requested for one of their descendants.
+static BOOL LKS_ShouldRenderViewFromLayerTree(UIView *view) {
+    for (UIView *currentView = view; currentView; currentView = currentView.superview) {
+        if ([currentView isKindOfClass:[UITableViewHeaderFooterView class]]) {
+            return YES;
+        }
+    }
+    return NO;
+}
+#endif
+
 - (LookinImage *)lks_groupScreenshotWithLowQuality:(BOOL)lowQuality {
 
     CGFloat screenScale = [LKS_MultiplatformAdapter mainScreenScale];
@@ -173,7 +189,7 @@ static void LKS_CollectRenderPoisoningSublayers(CALayer *layer, NSMutableArray<C
     // 当 hostView 所属的 scene 不在前台时，改用 renderInContext:（直接从 layer model tree 渲染）。
     BOOL useDrawHierarchy = NO;
     LookinView *hostView = self.lks_hostView;
-    if (hostView && !hostView.lks_isChildrenViewOfTabBar) {
+    if (hostView && !hostView.lks_isChildrenViewOfTabBar && !LKS_ShouldRenderViewFromLayerTree(hostView)) {
         useDrawHierarchy = YES;
         if (@available(iOS 13.0, *)) {
             UIWindowScene *scene = hostView.window.windowScene;
@@ -259,7 +275,7 @@ static void LKS_CollectRenderPoisoningSublayers(CALayer *layer, NSMutableArray<C
         CGContextRef soloContext = UIGraphicsGetCurrentContext();
         BOOL useSoloDrawHierarchy = NO;
         LookinView *soloHostView = self.lks_hostView;
-        if (soloHostView && !soloHostView.lks_isChildrenViewOfTabBar) {
+        if (soloHostView && !soloHostView.lks_isChildrenViewOfTabBar && !LKS_ShouldRenderViewFromLayerTree(soloHostView)) {
             useSoloDrawHierarchy = YES;
             if (@available(iOS 13.0, *)) {
                 UIWindowScene *soloScene = soloHostView.window.windowScene;
