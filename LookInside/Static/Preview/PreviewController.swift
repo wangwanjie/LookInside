@@ -567,6 +567,16 @@ final class PreviewController: BaseViewController, NSGestureRecognizerDelegate, 
             }
         }
 
+        if let identifier = LKMCPObjectIdentifierFormatter.objectIdentifier(for: displayItem) {
+            let item = NSMenuItem()
+            item.title = NSLocalizedString("Copy Object ID", comment: "")
+            item.target = self
+            item.action = #selector(handleCopyObjectIdentifier(_:))
+            item.representedObject = identifier
+            menu.addItem(item)
+            menu.addItem(.separator())
+        }
+
         if displayItem.isExpandable {
             if displayItem.isExpanded {
                 addItem(NSLocalizedString("Collapse children", comment: ""), #selector(handleCollapseChildren(_:)))
@@ -596,6 +606,13 @@ final class PreviewController: BaseViewController, NSGestureRecognizerDelegate, 
             name: NSNotification.Name(appShowConsoleNotificationName),
             object: rightClickingDisplayItem
         )
+    }
+
+    @objc private func handleCopyObjectIdentifier(_ menuItem: NSMenuItem) {
+        guard let identifier = menuItem.representedObject as? String, !identifier.isEmpty else { return }
+        let pasteboard = NSPasteboard.general
+        pasteboard.clearContents()
+        pasteboard.setString(identifier, forType: .string)
     }
 
     @objc private func handleReloadSelfItem(_: NSMenuItem) {
