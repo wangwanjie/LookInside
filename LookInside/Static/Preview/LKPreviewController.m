@@ -22,6 +22,7 @@
 #import "LKUserActionManager.h"
 #import "LKHierarchyDataSource+KeyDown.h"
 #import "LKStaticAsyncUpdateManager.h"
+#import "LookInside-Swift.h"
 
 extern NSString *const LKAppShowConsoleNotificationName;
 
@@ -645,6 +646,19 @@ extern NSString *const LKAppShowConsoleNotificationName;
         }
     }
     
+    NSString *objectIdentifier = [LKMCPObjectIdentifierFormatter objectIdentifierForDisplayItem:displayItem];
+    if (objectIdentifier.length > 0) {
+        [menu addItem:({
+            NSMenuItem *item = [NSMenuItem new];
+            item.target = self;
+            item.action = @selector(_handleCopyObjectIdentifier:);
+            item.representedObject = objectIdentifier;
+            item.title = NSLocalizedString(@"Copy Object ID", nil);
+            item;
+        })];
+        [menu addItem:[NSMenuItem separatorItem]];
+    }
+
     if (displayItem.isExpandable) {
         if (displayItem.isExpanded) {
             [menu addItem:({
@@ -703,6 +717,16 @@ extern NSString *const LKAppShowConsoleNotificationName;
     } else {
         self.isKeyingDownCommand = NO;
     }
+}
+
+- (void)_handleCopyObjectIdentifier:(NSMenuItem *)menuItem {
+    NSString *objectIdentifier = menuItem.representedObject;
+    if (objectIdentifier.length == 0) {
+        return;
+    }
+    NSPasteboard *pasteboard = [NSPasteboard generalPasteboard];
+    [pasteboard clearContents];
+    [pasteboard setString:objectIdentifier forType:NSPasteboardTypeString];
 }
 
 - (void)_handlePrintItem:(NSMenuItem *)menuItem {

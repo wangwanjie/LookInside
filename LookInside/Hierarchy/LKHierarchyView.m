@@ -21,6 +21,7 @@
 #import "LKInspectableApp.h"
 #import "LookinDisplayItem+LookinClient.h"
 #import "LKHierarchyLocationTreeFormatter.h"
+#import "LookInside-Swift.h"
 
 static NSString * const kMenuBindKey_RowView = @"view";
 static CGFloat const kRowHeight = 28;
@@ -394,6 +395,18 @@ extern NSString *const LKAppShowConsoleNotificationName;
         })];
     }
 
+    NSString *objectIdentifier = [LKMCPObjectIdentifierFormatter objectIdentifierForDisplayItem:displayItem];
+    if (objectIdentifier.length > 0) {
+        [menu addItem:({
+            NSMenuItem *item = [NSMenuItem new];
+            item.target = self;
+            item.action = @selector(_handleCopyObjectIdentifier:);
+            item.representedObject = objectIdentifier;
+            item.title = NSLocalizedString(@"Copy Object ID", nil);
+            item;
+        })];
+    }
+
     NSArray<LookinDisplayItem *> *backingLayerItems = [self.dataSource swiftUIBackingLayerItemsForItem:displayItem];
     LookinDisplayItem *swiftUISourceItem = [self.dataSource swiftUISourceItemForLayerItem:displayItem];
     if (backingLayerItems.count || swiftUISourceItem) {
@@ -576,6 +589,16 @@ extern NSString *const LKAppShowConsoleNotificationName;
     NSPasteboard *paste = [NSPasteboard generalPasteboard];
     [paste clearContents];
     [paste writeObjects:@[stringToCopy]];
+}
+
+- (void)_handleCopyObjectIdentifier:(NSMenuItem *)menuItem {
+    NSString *objectIdentifier = menuItem.representedObject;
+    if (objectIdentifier.length == 0) {
+        return;
+    }
+    NSPasteboard *pasteboard = [NSPasteboard generalPasteboard];
+    [pasteboard clearContents];
+    [pasteboard setString:objectIdentifier forType:NSPasteboardTypeString];
 }
 
 - (void)_handleCopyDisplayItemLocationTree:(NSMenuItem *)menuItem {
