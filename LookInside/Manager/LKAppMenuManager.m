@@ -400,12 +400,6 @@ static NSMenuItem *LKSubmenuItem(NSString *title, NSMenu *submenu, NSInteger tag
             obj.enabled = [wc respondsToSelector:delegateSel];
             return;
         }
-        if (obj.tag == kTag_CheckUpdates) {
-            // Nil whenever the build carries no Sparkle public key; see
-            // -_shouldStartSparkleUpdater.
-            obj.enabled = self.updaterController != nil;
-            return;
-        }
         // Phase E: NSDocument-aware validation for standard responder actions.
         if (obj.action == @selector(saveDocumentAs:)) {
             NSDocument *doc = [[NSDocumentController sharedDocumentController] documentForWindow:NSApp.keyWindow];
