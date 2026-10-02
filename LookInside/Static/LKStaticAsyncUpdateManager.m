@@ -359,7 +359,9 @@ static BOOL LKCurrentHierarchyContainsSwiftUIItems(LKStaticHierarchyDataSource *
         LookinStaticAsyncUpdateTask *newTask = nil;
         if (item.doNotFetchScreenshotReason == LookinFetchScreenshotPermitted) {
             // 该图层应该有图像（但是现在没有），所以应该拉取图像
-            if (item.isExpandable && item.isExpanded) {
+            // Match appropriateScreenshot: pixelless children do not require
+            // excluding child content, so these nodes still use the group image.
+            if (item.isExpandable && item.isExpanded && item.hasPixelBearingSubitems) {
                 newTask = [self _taskFromDisplayItem:item type:LookinStaticAsyncUpdateTaskTypeSoloScreenshot];
             } else {
                 newTask = [self _taskFromDisplayItem:item type:LookinStaticAsyncUpdateTaskTypeGroupScreenshot];
