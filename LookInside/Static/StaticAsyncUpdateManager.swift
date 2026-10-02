@@ -276,7 +276,8 @@ final class StaticAsyncUpdateManager: NSObject {
                 if let groupTask = self.task(from: item, type: .groupScreenshot) {
                     tasks.append(groupTask)
                 }
-                if item.isExpandable, let soloTask = self.task(from: item, type: .soloScreenshot) {
+                if item.isExpandable, item.isExpanded, item.hasPixelBearingSubitems(),
+                   let soloTask = self.task(from: item, type: .soloScreenshot) {
                     tasks.append(soloTask)
                 }
             } else if let attrTask = self.task(from: item, type: .noScreenshot) {
