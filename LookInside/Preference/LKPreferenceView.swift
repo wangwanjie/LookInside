@@ -96,6 +96,23 @@ private struct LKPreferenceRootView: View {
                         TimeoutEditor(value: model.hierarchyTimeoutBinding)
                     }
 
+                    PreferenceDivider()
+                    PreferenceRow(
+                        title: "Detail Batch Tasks",
+                        message: "Maximum tasks per batch (1–100). Default: 20. Applies to the next detail request.",
+                        controlWidth: 168
+                    ) {
+                        BatchEditor(value: model.batchTasksBinding, range: 1...100, step: 1)
+                    }
+                    PreferenceDivider()
+                    PreferenceRow(
+                        title: "Detail Batch Screenshot Area",
+                        message: "Maximum total screenshot frame area per batch, in square points. Default: 500000. A single larger screenshot is not split.",
+                        controlWidth: 168
+                    ) {
+                        BatchEditor(value: model.batchAreaBinding, range: 10000...2000000, step: 10000)
+                    }
+
                     #if DEBUG
                         PreferenceDivider()
 
@@ -179,6 +196,22 @@ private struct PreferenceDivider: View {
     }
 }
 
+private struct BatchEditor: View {
+    @Binding var value: Int
+    let range: ClosedRange<Int>
+    let step: Int
+
+    var body: some View {
+        HStack(spacing: 8) {
+            TextField("", value: $value, format: .number.grouping(.never))
+                .multilineTextAlignment(.trailing)
+                .textFieldStyle(.roundedBorder)
+            Stepper("", value: $value, in: range, step: step)
+                .labelsHidden()
+        }
+    }
+}
+
 private struct TimeoutEditor: View {
     @Binding var value: Double
 
@@ -219,6 +252,8 @@ private final class LKPreferenceViewModel: ObservableObject {
     @Published private var doubleClickBehavior: Int
     @Published private var rememberExpansionState: Bool
     @Published private var hierarchyTimeout: Double
+    @Published private var batchTasks: Int
+    @Published private var batchArea: Int
 
     #if DEBUG
         @Published private var licenseTimeout: Double
@@ -228,6 +263,8 @@ private final class LKPreferenceViewModel: ObservableObject {
 
     init(manager: LKPreferenceManager = LKPreferenceManager.main()) {
         self.manager = manager
+        batchTasks = manager.detailPackageMaxTasksCount
+        batchArea = manager.detailPackageMaxArea
         appearanceType = manager.appearanceType.rawValue
         colorFormat = manager.rgbaFormat ? 0 : 1
         imageContrast = manager.imageContrastLevel
@@ -281,6 +318,20 @@ private final class LKPreferenceViewModel: ObservableObject {
         )
     }
 
+    var batchTasksBinding: Binding<Int> {
+        Binding(get: { self.batchTasks }, set: {
+            self.manager.detailPackageMaxTasksCount = $0
+            self.batchTasks = self.manager.detailPackageMaxTasksCount
+        })
+    }
+
+    var batchAreaBinding: Binding<Int> {
+        Binding(get: { self.batchArea }, set: {
+            self.manager.detailPackageMaxArea = $0
+            self.batchArea = self.manager.detailPackageMaxArea
+        })
+    }
+
     #if DEBUG
         var licenseTimeoutBinding: Binding<Double> {
             Binding(
@@ -298,6 +349,8 @@ private final class LKPreferenceViewModel: ObservableObject {
     }
 
     func reload() {
+        batchTasks = manager.detailPackageMaxTasksCount
+        batchArea = manager.detailPackageMaxArea
         appearanceType = manager.appearanceType.rawValue
         colorFormat = manager.rgbaFormat ? 0 : 1
         imageContrast = manager.imageContrastLevel
@@ -310,6 +363,8 @@ private final class LKPreferenceViewModel: ObservableObject {
     }
 
     func reset() {
+        batchTasksBinding.wrappedValue = 20
+        batchAreaBinding.wrappedValue = 500000
         setAppearanceType(LookinPreferredAppeanranceType.system.rawValue)
         setColorFormat(0)
         setImageContrast(0)

@@ -1,6 +1,70 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+"Detail Batch Tasks" : {
+  "localizations": {
+    "en": {
+      "stringUnit": {
+        "state": "translated",
+        "value": "Detail Batch Tasks"
+      }
+    },
+    "zh-Hans": {
+      "stringUnit": {
+        "state": "translated",
+        "value": "详情每包任务数"
+      }
+    }
+  }
+},
+"Maximum tasks per batch (1–100). Default: 20. Applies to the next detail request." : {
+  "localizations": {
+    "en": {
+      "stringUnit": {
+        "state": "translated",
+        "value": "Maximum tasks per batch (1–100). Default: 20. Applies to the next detail request."
+      }
+    },
+    "zh-Hans": {
+      "stringUnit": {
+        "state": "translated",
+        "value": "每包最多 1–100 个任务，默认 20。下次详情请求生效。"
+      }
+    }
+  }
+},
+"Detail Batch Screenshot Area" : {
+  "localizations": {
+    "en": {
+      "stringUnit": {
+        "state": "translated",
+        "value": "Detail Batch Screenshot Area"
+      }
+    },
+    "zh-Hans": {
+      "stringUnit": {
+        "state": "translated",
+        "value": "详情每包截图面积"
+      }
+    }
+  }
+},
+"Maximum total screenshot frame area per batch, in square points. Default: 500000. A single larger screenshot is not split." : {
+  "localizations": {
+    "en": {
+      "stringUnit": {
+        "state": "translated",
+        "value": "Maximum total screenshot frame area per batch, in square points. Default: 500000. A single larger screenshot is not split."
+      }
+    },
+    "zh-Hans": {
+      "stringUnit": {
+        "state": "translated",
+        "value": "每包截图 frame 总面积上限，单位平方点，默认 500000。单张超限截图不会拆分。"
+      }
+    }
+  }
+},
     "Progress" : {
       "localizations" : {
         "en" : {

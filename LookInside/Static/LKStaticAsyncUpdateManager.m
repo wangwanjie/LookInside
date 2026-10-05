@@ -202,8 +202,8 @@ static BOOL LKCurrentHierarchyContainsSwiftUIItems(LKStaticHierarchyDataSource *
     __block CGFloat packageTotalArea = 0;
     // The server replies only after completing a package on its main thread.
     // Smaller packages provide progress sooner and yield between batches.
-    CGFloat packageMaxArea = 500000;
-    NSUInteger packageMaxTasksCount = 20;
+    CGFloat packageMaxArea = LKPreferenceManager.mainManager.detailPackageMaxArea;
+    NSUInteger packageMaxTasksCount = LKPreferenceManager.mainManager.detailPackageMaxTasksCount;
     [tasks enumerateObjectsUsingBlock:^(LookinStaticAsyncUpdateTask * _Nonnull task, NSUInteger idx, BOOL * _Nonnull stop) {
         CGFloat currentArea = task.taskType == LookinStaticAsyncUpdateTaskTypeNoScreenshot
             ? 0 : task.frameSize.width * task.frameSize.height;

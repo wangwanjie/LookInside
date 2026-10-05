@@ -212,6 +212,11 @@ static const NSUInteger MaxRememberedExpansionStateBundles = 20;
             [userDefaults setObject:@(_preferredExportCompression) forKey:Key_PreferredExportCompression];
         }
 
+        NSInteger packageCount = [userDefaults integerForKey:@"detailPackageMaxTasksCount"];
+        _detailPackageMaxTasksCount = packageCount > 0 ? MIN(packageCount, 100) : 20;
+        NSInteger packageArea = [userDefaults integerForKey:@"detailPackageMaxArea"];
+        _detailPackageMaxArea = packageArea > 0 ? MIN(MAX(packageArea, 10000), 2000000) : 500000;
+
         NSNumber *obj_hierarchyRequestTimeoutInterval = [userDefaults objectForKey:Key_HierarchyRequestTimeoutInterval];
         if (obj_hierarchyRequestTimeoutInterval != nil && [obj_hierarchyRequestTimeoutInterval doubleValue] > 0) {
             _hierarchyRequestTimeoutInterval = [obj_hierarchyRequestTimeoutInterval doubleValue];
@@ -462,6 +467,20 @@ static const NSUInteger MaxRememberedExpansionStateBundles = 20;
     _hierarchyRequestTimeoutInterval = hierarchyRequestTimeoutInterval;
     if (self.shouldStoreToLocal) {
         [[NSUserDefaults standardUserDefaults] setObject:@(hierarchyRequestTimeoutInterval) forKey:Key_HierarchyRequestTimeoutInterval];
+    }
+}
+
+- (void)setDetailPackageMaxTasksCount:(NSInteger)value {
+    _detailPackageMaxTasksCount = MIN(MAX(value, 1), 100);
+    if (self.shouldStoreToLocal) {
+        [[NSUserDefaults standardUserDefaults] setInteger:_detailPackageMaxTasksCount forKey:@"detailPackageMaxTasksCount"];
+    }
+}
+
+- (void)setDetailPackageMaxArea:(NSInteger)value {
+    _detailPackageMaxArea = MIN(MAX(value, 10000), 2000000);
+    if (self.shouldStoreToLocal) {
+        [[NSUserDefaults standardUserDefaults] setInteger:_detailPackageMaxArea forKey:@"detailPackageMaxArea"];
     }
 }
 

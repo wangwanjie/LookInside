@@ -108,6 +108,9 @@ typedef NS_ENUM(NSInteger, LookinMeasureState) {
 @property(nonatomic, assign) CGFloat preferredExportCompression;
 
 @property(nonatomic, assign) NSTimeInterval hierarchyRequestTimeoutInterval;
+@property(nonatomic, assign) NSInteger detailPackageMaxTasksCount;
+/// Screenshot frame area in square points; a single larger task is kept intact.
+@property(nonatomic, assign) NSInteger detailPackageMaxArea;
 
 @property(nonatomic, assign) NSTimeInterval licenseHandshakeTimeoutInterval;
 
