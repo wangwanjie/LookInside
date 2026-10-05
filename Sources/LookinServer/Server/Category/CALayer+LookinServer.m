@@ -149,14 +149,26 @@ static void LKS_CollectRenderPoisoningSublayers(CALayer *layer, NSMutableArray<C
 /// contentView into a private snapshot window. That violates the invariant that
 /// UITableViewHeaderFooterView.contentView must remain its direct subview and can
 /// raise an NSInternalInconsistencyException. Render these views from the layer
-/// tree instead, including screenshots requested for one of their descendants.
+/// tree instead, including screenshots of their ancestors and descendants.
+static BOOL LKS_ViewContainsTableHeaderFooter(UIView *view) {
+    if ([view isKindOfClass:[UITableViewHeaderFooterView class]]) {
+        return YES;
+    }
+    for (UIView *subview in view.subviews) {
+        if (LKS_ViewContainsTableHeaderFooter(subview)) {
+            return YES;
+        }
+    }
+    return NO;
+}
+
 static BOOL LKS_ShouldRenderViewFromLayerTree(UIView *view) {
     for (UIView *currentView = view; currentView; currentView = currentView.superview) {
         if ([currentView isKindOfClass:[UITableViewHeaderFooterView class]]) {
             return YES;
         }
     }
-    return NO;
+    return LKS_ViewContainsTableHeaderFooter(view);
 }
 #endif
 
