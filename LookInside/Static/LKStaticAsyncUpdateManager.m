@@ -199,11 +199,14 @@ static BOOL LKCurrentHierarchyContainsSwiftUIItems(LKStaticHierarchyDataSource *
     NSMutableArray<LookinStaticAsyncUpdateTasksPackage *> *packages = [NSMutableArray array];
     NSMutableArray<LookinStaticAsyncUpdateTask *> *bufferTasks = [NSMutableArray array];
     
-    __block NSUInteger packageTotalArea = 0;
-    NSUInteger packageMaxArea = 2000000;
-    NSUInteger packageMaxTasksCount = 100;
+    __block CGFloat packageTotalArea = 0;
+    // The server replies only after completing a package on its main thread.
+    // Smaller packages provide progress sooner and yield between batches.
+    CGFloat packageMaxArea = 500000;
+    NSUInteger packageMaxTasksCount = 20;
     [tasks enumerateObjectsUsingBlock:^(LookinStaticAsyncUpdateTask * _Nonnull task, NSUInteger idx, BOOL * _Nonnull stop) {
-        CGFloat currentArea = task.frameSize.width * task.frameSize.height;
+        CGFloat currentArea = task.taskType == LookinStaticAsyncUpdateTaskTypeNoScreenshot
+            ? 0 : task.frameSize.width * task.frameSize.height;
         if ((packageTotalArea + currentArea > packageMaxArea) || bufferTasks.count >= packageMaxTasksCount) {
             if (bufferTasks.count > 0) {
                 packageTotalArea = 0;
@@ -427,6 +430,7 @@ static BOOL LKCurrentHierarchyContainsSwiftUIItems(LKStaticHierarchyDataSource *
     NSArray<LookinStaticAsyncUpdateTasksPackage *> *packages = [self _makePackagesFromTasks:newTasks];
     self.ongoingRequest = [LKDetailUpdateRequest new];
     self.ongoingRequest.packages = packages;
+    LKDetailUpdateRequest *request = self.ongoingRequest;
     
     [self notifyTasksCountToDelegate];
     
@@ -435,6 +439,9 @@ static BOOL LKCurrentHierarchyContainsSwiftUIItems(LKStaticHierarchyDataSource *
     @weakify(self);
     [[app fetchHierarchyDetailWithTaskPackages:packages] subscribeNext:^(NSArray<LookinDisplayItemDetail *> *details) {
         @strongify(self);
+        if (!self || self.ongoingRequest != request) {
+            return;
+        }
         [details enumerateObjectsUsingBlock:^(LookinDisplayItemDetail * _Nonnull detail, NSUInteger idx, BOOL * _Nonnull stop) {
             if (detail.failureCode != LookinDisplayItemDetailFailureCodeNone) {
                 // ObjectGone is routine: the inspected app released the
@@ -445,7 +452,7 @@ static BOOL LKCurrentHierarchyContainsSwiftUIItems(LKStaticHierarchyDataSource *
                 // transmit" alert.
                 BOOL objectIsGone = (detail.failureCode == LookinDisplayItemDetailFailureCodeObjectGone);
                 if (!objectIsGone) {
-                    self.ongoingRequest.failedTasksCount += 1;
+                    request.failedTasksCount += 1;
                 }
                 LookinDisplayItem *failedItem = [self.dataSource displayItemWithOid:detail.displayItemOid];
                 NSLog(@"AsyncUpdate - task %@: oid %lu, item %@ (nodeKind %ld, view %@ %@, layer %@ %@)",
@@ -461,16 +468,25 @@ static BOOL LKCurrentHierarchyContainsSwiftUIItems(LKStaticHierarchyDataSource *
                 [self.dataSource modifyWithDisplayItemDetail:detail];
             }
         }];
-        self.ongoingRequest.finishedTasksCount += details.count;
+        request.finishedTasksCount += details.count;
         [self notifyTasksCountToDelegate];
         
     } error:^(NSError * _Nullable error) {
         @strongify(self);
+        if (!self || self.ongoingRequest != request) {
+            return;
+        }
+        NSUInteger finishedCount = self.ongoingRequest.finishedTasksCount;
+        NSUInteger totalCount = self.ongoingRequest.tasksTotalCount;
+        NSLog(@"AsyncUpdate - detail request failed after %lu/%lu tasks: %@",
+              (unsigned long)finishedCount, (unsigned long)totalCount, error);
         self.ongoingRequest = nil;
         [self notifyTasksCountToDelegate];
         
         NSString *msgTitle = [NSString stringWithFormat:NSLocalizedString(@"Request timeout, layer data transmission failed.", nil)];
         NSMutableString *msgDetail = [NSMutableString stringWithString:NSLocalizedString(@"Perhaps your iOS app is paused with breakpoint in Xcode, blocked by other tasks in main thread, or moved to background state.\nToo large screenshots may also lead to this error.", nil)];
+        [msgDetail appendFormat:@"\n%@ %lu/%lu", NSLocalizedString(@"Progress", nil),
+         (unsigned long)finishedCount, (unsigned long)totalCount];
         if ([LKSwiftUISupportGatekeeper sharedInstance].activationState == LKSwiftUISupportActivationStateActivated &&
             LKCurrentHierarchyContainsSwiftUIItems(self.dataSource)) {
             [msgDetail appendFormat:@"\n%@", NSLocalizedString(@"First-time loading of SwiftUI details may take longer because LookInside needs to collect and match SwiftUI debug data.", nil)];
@@ -483,20 +499,21 @@ static BOOL LKCurrentHierarchyContainsSwiftUIItems(LKStaticHierarchyDataSource *
     } completed:^{
         // 注意，用户手动取消请求后，也会走到这里
         @strongify(self);
-        if (self.ongoingRequest) {
-            BOOL userCancel = (self.ongoingRequest.tasksTotalCount > self.ongoingRequest.finishedTasksCount);
+        if (!self || self.ongoingRequest != request) {
+            return;
+        }
+        self.ongoingRequest = nil;
+        {
+            BOOL userCancel = (request.tasksTotalCount > request.finishedTasksCount);
             if (!userCancel) {
-                [self.succeededRequests addObject:self.ongoingRequest];
+                [self.succeededRequests addObject:request];
             }
             
-            if (self.ongoingRequest.failedTasksCount > 0) {
+            if (request.failedTasksCount > 0) {
                 NSError *error = LookinErrorMake(NSLocalizedString(@"Some layer data failed to transmit.", nil), NSLocalizedString(@"It may be due to changes in the layer structure within the iOS app. You can try reloading the entire structure in LookInside.", nil));
                 [self.delegate detailUpdateReceivedError:error];
             }
             
-            self.ongoingRequest = nil;
-        } else {
-            NSAssert(NO, @"");
         }
         [self notifyTasksCountToDelegate];
         [LKPerformanceReporter.sharedInstance didComplete];
