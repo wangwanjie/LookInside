@@ -22,6 +22,7 @@ struct GeneralSettingsPage: View {
             GeneralColorFormatSection(model: model)
             GeneralImageContrastSection(model: model)
             GeneralHierarchySection(model: model)
+            GeneralDetailBatchSection(model: model)
             GeneralTimeoutSection(model: model)
             #if DEBUG
                 GeneralLicenseTimeoutSection(model: model)
@@ -139,6 +140,33 @@ private struct GeneralTimeoutSection: View {
             Text("Timeouts")
         } footer: {
             Text("Timeout for hierarchy and hierarchy-details requests, in seconds. Default: 15s.")
+        }
+    }
+}
+
+/// Limits the number and screenshot area sent to the inspected app per
+/// hierarchy-detail batch. Smaller batches report progress sooner.
+private struct GeneralDetailBatchSection: View {
+    @Bindable var model: GeneralSettingsModel
+
+    var body: some View {
+        Section {
+            LabeledContent("Tasks per batch") {
+                Stepper(value: $model.detailPackageMaxTasksCount, in: 1 ... 100) {
+                    Text(model.detailPackageMaxTasksCount.formatted())
+                        .monospacedDigit()
+                }
+            }
+            LabeledContent("Screenshot area per batch") {
+                Stepper(value: $model.detailPackageMaxArea, in: 10_000 ... 2_000_000, step: 10_000) {
+                    Text(model.detailPackageMaxArea.formatted())
+                        .monospacedDigit()
+                }
+            }
+        } header: {
+            Text("Hierarchy Details")
+        } footer: {
+            Text("Smaller batches show loading progress sooner. Screenshot area is measured in square points; one screenshot larger than the limit is kept intact. Defaults: 20 tasks and 500,000 square points.")
         }
     }
 }
@@ -321,6 +349,8 @@ final class GeneralSettingsModel {
     private var currentRemembersExpansionState: Bool
     private var currentHierarchyRequestTimeout: TimeInterval
     private var currentLicenseHandshakeTimeout: TimeInterval
+    private var currentDetailPackageMaxTasksCount: Int
+    private var currentDetailPackageMaxArea: Int
 
     init(preferences: PreferenceManager = .shared) {
         self.preferences = preferences
@@ -331,6 +361,8 @@ final class GeneralSettingsModel {
         currentRemembersExpansionState = preferences.rememberExpansionState
         currentHierarchyRequestTimeout = preferences.hierarchyRequestTimeoutInterval
         currentLicenseHandshakeTimeout = preferences.licenseHandshakeTimeoutInterval
+        currentDetailPackageMaxTasksCount = preferences.detailPackageMaxTasksCount
+        currentDetailPackageMaxArea = preferences.detailPackageMaxArea
 
         observations = [
             preferences.observe(\.appearanceType, options: [.new]) { [weak self] preferences, _ in
@@ -353,6 +385,12 @@ final class GeneralSettingsModel {
             },
             preferences.observe(\.licenseHandshakeTimeoutInterval, options: [.new]) { [weak self] preferences, _ in
                 MainActor.assumeIsolated { self?.currentLicenseHandshakeTimeout = preferences.licenseHandshakeTimeoutInterval }
+            },
+            preferences.observe(\.detailPackageMaxTasksCount, options: [.new]) { [weak self] preferences, _ in
+                MainActor.assumeIsolated { self?.currentDetailPackageMaxTasksCount = preferences.detailPackageMaxTasksCount }
+            },
+            preferences.observe(\.detailPackageMaxArea, options: [.new]) { [weak self] preferences, _ in
+                MainActor.assumeIsolated { self?.currentDetailPackageMaxArea = preferences.detailPackageMaxArea }
             },
         ]
     }
@@ -400,6 +438,16 @@ final class GeneralSettingsModel {
         }
     }
 
+    var detailPackageMaxTasksCount: Int {
+        get { currentDetailPackageMaxTasksCount }
+        set { preferences.detailPackageMaxTasksCount = newValue }
+    }
+
+    var detailPackageMaxArea: Int {
+        get { currentDetailPackageMaxArea }
+        set { preferences.detailPackageMaxArea = newValue }
+    }
+
     /// Every value on the page back to its default. Debug builds also forget
     /// the dismissed tips, as the Preferences window's Reset did.
     func resetToDefaults() {
@@ -409,6 +457,8 @@ final class GeneralSettingsModel {
         doubleClickBehavior = .collapse
         remembersExpansionState = true
         hierarchyRequestTimeout = defaultHierarchyRequestTimeoutInterval
+        detailPackageMaxTasksCount = defaultDetailPackageMaxTasksCount
+        detailPackageMaxArea = defaultDetailPackageMaxArea
 
         #if DEBUG
             licenseHandshakeTimeout = defaultLicenseHandshakeTimeoutInterval

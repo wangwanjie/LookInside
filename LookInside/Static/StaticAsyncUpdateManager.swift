@@ -345,8 +345,13 @@ final class StaticAsyncUpdateManager: NSObject {
             task.taskType == .noScreenshot ? 0 : Double(task.frameSize.width * task.frameSize.height)
         }
         // The Server replies only after completing each package on its main
-        // thread. Smaller batches report progress sooner and yield between them.
-        return DetailTaskPackaging.packageRanges(areas: areas, maxArea: 500_000, maxCount: 20).map { range in
+        // thread. The user-configured limits report progress sooner and yield
+        // between batches.
+        return DetailTaskPackaging.packageRanges(
+            areas: areas,
+            maxArea: Double(PreferenceManager.shared.detailPackageMaxArea),
+            maxCount: PreferenceManager.shared.detailPackageMaxTasksCount
+        ).map { range in
             let package = StaticAsyncUpdateTasksPackage()
             package.tasks = Array(tasks[range])
             return package

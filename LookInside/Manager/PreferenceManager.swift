@@ -25,6 +25,8 @@ let initialPreviewScale: CGFloat = 0.27
 /// The default hierarchy request timeout, in seconds.
 let defaultHierarchyRequestTimeoutInterval: TimeInterval = 15
 let defaultLicenseHandshakeTimeoutInterval: TimeInterval = 5
+let defaultDetailPackageMaxTasksCount = 20
+let defaultDetailPackageMaxArea = 500_000
 
 /// Posted when a dashboard section is added or removed.
 let NotificationName_DidChangeSectionShowing = "NotificationName_DidChangeSectionShowing"
@@ -80,6 +82,8 @@ final class PreferenceManager: NSObject {
         static let preferredExportCompression = "preferredExportCompression"
         static let hierarchyRequestTimeoutInterval = "hierarchyRequestTimeoutInterval"
         static let licenseHandshakeTimeoutInterval = "licenseHandshakeTimeoutInterval"
+        static let detailPackageMaxTasksCount = "detailPackageMaxTasksCount"
+        static let detailPackageMaxArea = "detailPackageMaxArea"
         static let syncConsoleTarget = "syncConsoleTarget"
         static let freeRotation = "FreeRotation"
         static let fastMode = "fastMode"
@@ -212,6 +216,28 @@ final class PreferenceManager: NSObject {
         }
     }
 
+    private var storedDetailPackageMaxTasksCount: Int
+    @objc dynamic var detailPackageMaxTasksCount: Int {
+        get { storedDetailPackageMaxTasksCount }
+        set {
+            let value = min(max(newValue, 1), 100)
+            guard storedDetailPackageMaxTasksCount != value else { return }
+            storedDetailPackageMaxTasksCount = value
+            store(value, forKey: Key.detailPackageMaxTasksCount)
+        }
+    }
+
+    private var storedDetailPackageMaxArea: Int
+    @objc dynamic var detailPackageMaxArea: Int {
+        get { storedDetailPackageMaxArea }
+        set {
+            let value = min(max(newValue, 10_000), 2_000_000)
+            guard storedDetailPackageMaxArea != value else { return }
+            storedDetailPackageMaxArea = value
+            store(value, forKey: Key.detailPackageMaxArea)
+        }
+    }
+
     @objc let freeRotation: BoolMessageAttribute
 
     @objc let fastMode: BoolMessageAttribute
@@ -321,6 +347,14 @@ final class PreferenceManager: NSObject {
         storedLicenseHandshakeTimeoutInterval = Self.positiveInterval(
             defaults, key: Key.licenseHandshakeTimeoutInterval, fallback: defaultLicenseHandshakeTimeoutInterval
         )
+        storedDetailPackageMaxTasksCount = min(max(
+            Self.storedNumber(defaults.object(forKey: Key.detailPackageMaxTasksCount))?.intValue ?? defaultDetailPackageMaxTasksCount,
+            1
+        ), 100)
+        storedDetailPackageMaxArea = min(max(
+            Self.storedNumber(defaults.object(forKey: Key.detailPackageMaxArea))?.intValue ?? defaultDetailPackageMaxArea,
+            10_000
+        ), 2_000_000)
 
         receivingConfigTime_Color = defaults.double(forKey: Key.receivingConfigTimeColor)
         receivingConfigTime_Class = defaults.double(forKey: Key.receivingConfigTimeClass)
