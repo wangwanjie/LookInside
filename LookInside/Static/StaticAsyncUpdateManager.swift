@@ -341,8 +341,12 @@ final class StaticAsyncUpdateManager: NSObject {
     }
 
     private static func packages(from tasks: [StaticAsyncUpdateTask]) -> [StaticAsyncUpdateTasksPackage] {
-        let areas = tasks.map { Double($0.frameSize.width * $0.frameSize.height) }
-        return DetailTaskPackaging.packageRanges(areas: areas).map { range in
+        let areas = tasks.map { task in
+            task.taskType == .noScreenshot ? 0 : Double(task.frameSize.width * task.frameSize.height)
+        }
+        // The Server replies only after completing each package on its main
+        // thread. Smaller batches report progress sooner and yield between them.
+        return DetailTaskPackaging.packageRanges(areas: areas, maxArea: 500_000, maxCount: 20).map { range in
             let package = StaticAsyncUpdateTasksPackage()
             package.tasks = Array(tasks[range])
             return package
@@ -392,18 +396,20 @@ final class StaticAsyncUpdateManager: NSObject {
             guard let self else { return }
             switch event {
             case let .value(value):
-                receive(details: value as? [DisplayItemDetail] ?? [])
-            case .failure:
-                fail()
+                guard self.ongoingRequest === request else { return }
+                receive(details: value as? [DisplayItemDetail] ?? [], for: request)
+            case let .failure(error):
+                fail(error, for: request)
             case .completion:
+                guard self.ongoingRequest === request else { return }
                 // A request the user cancelled ends here too.
-                complete()
+                complete(request)
                 completion?()
             }
         }
     }
 
-    private func receive(details: [DisplayItemDetail]) {
+    private func receive(details: [DisplayItemDetail], for request: DetailUpdateRequest) {
         for detail in details {
             if detail.failureCode != LookinDisplayItemDetailFailureCode.none.rawValue {
                 // ObjectGone is routine: the inspected app released the
@@ -414,7 +420,7 @@ final class StaticAsyncUpdateManager: NSObject {
                 // transmit" alert.
                 let objectIsGone = detail.failureCode == LookinDisplayItemDetailFailureCode.objectGone.rawValue
                 if !objectIsGone {
-                    ongoingRequest?.failedTasksCount += 1
+                    request.failedTasksCount += 1
                 }
                 let failedItem = dataSource?.displayItem(withOid: detail.displayItemOid)
                 let outcome: String = objectIsGone ? "skipped, object gone" : "failed"
@@ -429,11 +435,15 @@ final class StaticAsyncUpdateManager: NSObject {
                 dataSource?.modify(with: detail)
             }
         }
-        ongoingRequest?.finishedTasksCount += details.count
+        request.finishedTasksCount += details.count
         notifyTasksCountToDelegate()
     }
 
-    private func fail() {
+    private func fail(_ error: NSError, for request: DetailUpdateRequest) {
+        guard ongoingRequest === request else { return }
+        let finishedCount = request.finishedTasksCount
+        let totalCount = request.tasksTotalCount
+        #log(.error, "AsyncUpdate - detail request failed after \(finishedCount)/\(totalCount): \(error.localizedDescription, privacy: .public)")
         ongoingRequest = nil
         notifyTasksCountToDelegate()
 
@@ -442,6 +452,7 @@ final class StaticAsyncUpdateManager: NSObject {
             "Perhaps your iOS app is paused with breakpoint in Xcode, blocked by other tasks in main thread, or moved to background state.\nToo large screenshots may also lead to this error.",
             comment: ""
         )
+        detail += "\n\(NSLocalizedString("Progress", comment: "")) \(finishedCount)/\(totalCount)"
         if SwiftUISupportGatekeeper.sharedInstance().activationState == .activated,
            (dataSource?.flatItems ?? []).contains(where: { $0.isSwiftUISupportRelated() })
         {
@@ -450,34 +461,31 @@ final class StaticAsyncUpdateManager: NSObject {
                 comment: ""
             )
         }
-        let error = StaticErrors.make(title: title, detail: detail)
+        let alertError = StaticErrors.make(title: title, detail: detail)
         DispatchQueue.main.asyncAfter(deadline: .now() + 1) {
             // The static view controller may not be set up yet to show the
             // tip, so wait a little.
-            self.delegate?.detailUpdateReceivedError(error)
+            self.delegate?.detailUpdateReceivedError(alertError)
         }
     }
 
-    private func complete() {
-        if let request = ongoingRequest {
-            let userCancelled = request.tasksTotalCount > request.finishedTasksCount
-            if !userCancelled {
-                succeededRequests.append(request)
-            }
-            if request.failedTasksCount > 0 {
-                let error = StaticErrors.make(
-                    title: NSLocalizedString("Some layer data failed to transmit.", comment: ""),
-                    detail: NSLocalizedString(
-                        "It may be due to changes in the layer structure within the iOS app. You can try reloading the entire structure in LookInside.",
-                        comment: ""
-                    )
-                )
-                delegate?.detailUpdateReceivedError(error)
-            }
-            ongoingRequest = nil
-        } else {
-            assertionFailure()
+    private func complete(_ request: DetailUpdateRequest) {
+        guard ongoingRequest === request else { return }
+        let userCancelled = request.tasksTotalCount > request.finishedTasksCount
+        if !userCancelled {
+            succeededRequests.append(request)
         }
+        if request.failedTasksCount > 0 {
+            let error = StaticErrors.make(
+                title: NSLocalizedString("Some layer data failed to transmit.", comment: ""),
+                detail: NSLocalizedString(
+                    "It may be due to changes in the layer structure within the iOS app. You can try reloading the entire structure in LookInside.",
+                    comment: ""
+                )
+            )
+            delegate?.detailUpdateReceivedError(error)
+        }
+        ongoingRequest = nil
         notifyTasksCountToDelegate()
         PerformanceReporter.sharedInstance().didComplete()
     }
