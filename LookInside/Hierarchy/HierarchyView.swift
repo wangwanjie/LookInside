@@ -115,6 +115,25 @@ class HierarchyView: BaseView {
         fatalError("HierarchyView is not loaded from archives")
     }
 
+    override func performKeyEquivalent(with event: NSEvent) -> Bool {
+        let modifiers = event.modifierFlags.intersection(.deviceIndependentFlagsMask)
+        let listHasFocus = (window?.firstResponder as? NSView).map { $0.isDescendant(of: tableView) } ?? false
+        if listHasFocus, modifiers == .command, event.charactersIgnoringModifiers?.lowercased() == "c" {
+            copySelectedObjectIdentifier()
+            return true
+        }
+        return super.performKeyEquivalent(with: event)
+    }
+
+    private func copySelectedObjectIdentifier() {
+        guard let item = dataSource.selectedItem,
+              let identifier = LKMCPObjectIdentifierFormatter.objectIdentifier(for: item)
+        else { return }
+        let pasteboard = NSPasteboard.general
+        pasteboard.clearContents()
+        pasteboard.setString(identifier, forType: .string)
+    }
+
     deinit {
         if let textChangeObserver {
             NotificationCenter.default.removeObserver(textChangeObserver)
