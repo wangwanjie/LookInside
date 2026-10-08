@@ -86,7 +86,13 @@
             self.finishBlock();
             return;
         }
+        CFAbsoluteTime packageStart = CFAbsoluteTimeGetCurrent();
+        __block double screenshotMs = 0;
+        __block double attributesAndBasisMs = 0;
         NSArray<LookinDisplayItemDetail *> *details = [package.tasks lookin_map:^id(NSUInteger idx, LookinStaticAsyncUpdateTask *task) {
+            CFAbsoluteTime taskStart = CFAbsoluteTimeGetCurrent();
+            __block CFAbsoluteTime screenshotEnd = taskStart;
+            @try {
             LookinDisplayItemDetail *itemDetail = [LookinDisplayItemDetail new];
             itemDetail.displayItemOid = task.oid;
 
@@ -129,6 +135,7 @@
     }
 }
 
+                screenshotEnd = CFAbsoluteTimeGetCurrent();
                 BOOL shouldMakeAttr = [self queryIfShouldMakeAttrsFromTask:task];
                 if (shouldMakeAttr) {
                     itemDetail.attributesGroupList = [LKS_AttrGroupsMaker attrGroupsForView:view];
@@ -168,6 +175,7 @@
                         CGImageRelease(cgImage);
                     }
                 }
+                screenshotEnd = CFAbsoluteTimeGetCurrent();
                 BOOL shouldMakeAttr = [self queryIfShouldMakeAttrsFromTask:task];
                 if (shouldMakeAttr) {
                     itemDetail.attributesGroupList = [LKS_AttrGroupsMaker attrGroupsForWindow:window];
@@ -225,6 +233,7 @@
                 itemDetail.groupScreenshot = image;
             }
 
+            screenshotEnd = CFAbsoluteTimeGetCurrent();
             BOOL shouldMakeAttr = [self queryIfShouldMakeAttrsFromTask:task];
             if (shouldMakeAttr) {
                 itemDetail.attributesGroupList = [LKS_AttrGroupsMaker attrGroupsForLayer:layer];
@@ -253,8 +262,25 @@
             }
 
             return itemDetail;
+            } @finally {
+                double totalMs = (CFAbsoluteTimeGetCurrent() - taskStart) * 1000;
+                double imageMs = (screenshotEnd - taskStart) * 1000;
+                screenshotMs += imageMs;
+                attributesAndBasisMs += totalMs - imageMs;
+                if (totalMs >= 100) {
+                    NSLog(@"[LookInsidePerf] server slow oid=%lu type=%ld frame=%.0fx%.0f totalMs=%.1f screenshotMs=%.1f attrsBasisMs=%.1f",
+                          task.oid, (long)task.taskType, task.frameSize.width, task.frameSize.height,
+                          totalMs, imageMs, totalMs - imageMs);
+                }
+            }
         }];
+        CFAbsoluteTime sendStart = CFAbsoluteTimeGetCurrent();
         self.progressBlock(details);
+        NSLog(@"[LookInsidePerf] server batch tasks=%lu totalMs=%.1f screenshotMs=%.1f attrsBasisMs=%.1f replyMs=%.1f",
+              (unsigned long)package.tasks.count,
+              (CFAbsoluteTimeGetCurrent() - packageStart) * 1000,
+              screenshotMs, attributesAndBasisMs,
+              (CFAbsoluteTimeGetCurrent() - sendStart) * 1000);
 
         [self.taskPackages removeObjectAtIndex:0];
         [self _dequeueAndHandlePackage];

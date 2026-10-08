@@ -179,7 +179,7 @@ static BOOL LKCurrentHierarchyContainsSwiftUIItems(LKStaticHierarchyDataSource *
                 [tasks addObject:task];
             }
             
-            if (item.isExpandable) {
+            if (item.isExpandable && item.hasPixelBearingSubitems) {
                 LookinStaticAsyncUpdateTask *task2 = [self _taskFromDisplayItem:item type:LookinStaticAsyncUpdateTaskTypeSoloScreenshot];
                 if (task2 && ![tasks containsObject:task2]) {
                     [tasks addObject:task2];
@@ -431,6 +431,14 @@ static BOOL LKCurrentHierarchyContainsSwiftUIItems(LKStaticHierarchyDataSource *
     self.ongoingRequest = [LKDetailUpdateRequest new];
     self.ongoingRequest.packages = packages;
     LKDetailUpdateRequest *request = self.ongoingRequest;
+    CFAbsoluteTime requestStart = CFAbsoluteTimeGetCurrent();
+    __block CFAbsoluteTime lastResponseTime = requestStart;
+    __block NSUInteger responseCount = 0;
+    NSLog(@"[LookInsidePerf] host begin tasks=%lu packages=%lu fast=%d maxTasks=%ld maxArea=%ld",
+          (unsigned long)newTasks.count, (unsigned long)packages.count,
+          LKPreferenceManager.mainManager.fastMode.currentBOOLValue,
+          (long)LKPreferenceManager.mainManager.detailPackageMaxTasksCount,
+          (long)LKPreferenceManager.mainManager.detailPackageMaxArea);
     
     [self notifyTasksCountToDelegate];
     
@@ -442,6 +450,7 @@ static BOOL LKCurrentHierarchyContainsSwiftUIItems(LKStaticHierarchyDataSource *
         if (!self || self.ongoingRequest != request) {
             return;
         }
+        CFAbsoluteTime responseTime = CFAbsoluteTimeGetCurrent();
         [details enumerateObjectsUsingBlock:^(LookinDisplayItemDetail * _Nonnull detail, NSUInteger idx, BOOL * _Nonnull stop) {
             if (detail.failureCode != LookinDisplayItemDetailFailureCodeNone) {
                 // ObjectGone is routine: the inspected app released the
@@ -469,6 +478,14 @@ static BOOL LKCurrentHierarchyContainsSwiftUIItems(LKStaticHierarchyDataSource *
             }
         }];
         request.finishedTasksCount += details.count;
+        responseCount++;
+        NSLog(@"[LookInsidePerf] host response=%lu details=%lu gapMs=%.1f applyMs=%.1f progress=%ld/%ld elapsedMs=%.1f",
+              (unsigned long)responseCount, (unsigned long)details.count,
+              (responseTime - lastResponseTime) * 1000,
+              (CFAbsoluteTimeGetCurrent() - responseTime) * 1000,
+              (long)request.finishedTasksCount, (long)request.tasksTotalCount,
+              (CFAbsoluteTimeGetCurrent() - requestStart) * 1000);
+        lastResponseTime = CFAbsoluteTimeGetCurrent();
         [self notifyTasksCountToDelegate];
         
     } error:^(NSError * _Nullable error) {
@@ -478,6 +495,9 @@ static BOOL LKCurrentHierarchyContainsSwiftUIItems(LKStaticHierarchyDataSource *
         }
         NSUInteger finishedCount = self.ongoingRequest.finishedTasksCount;
         NSUInteger totalCount = self.ongoingRequest.tasksTotalCount;
+        NSLog(@"[LookInsidePerf] host error elapsedMs=%.1f progress=%lu/%lu error=%@",
+              (CFAbsoluteTimeGetCurrent() - requestStart) * 1000,
+              (unsigned long)finishedCount, (unsigned long)totalCount, error);
         NSLog(@"AsyncUpdate - detail request failed after %lu/%lu tasks: %@",
               (unsigned long)finishedCount, (unsigned long)totalCount, error);
         self.ongoingRequest = nil;
@@ -505,6 +525,9 @@ static BOOL LKCurrentHierarchyContainsSwiftUIItems(LKStaticHierarchyDataSource *
         self.ongoingRequest = nil;
         {
             BOOL userCancel = (request.tasksTotalCount > request.finishedTasksCount);
+            NSLog(@"[LookInsidePerf] host end elapsedMs=%.1f cancelled=%d progress=%ld/%ld",
+                  (CFAbsoluteTimeGetCurrent() - requestStart) * 1000, userCancel,
+                  (long)request.finishedTasksCount, (long)request.tasksTotalCount);
             if (!userCancel) {
                 [self.succeededRequests addObject:request];
             }
@@ -581,7 +604,7 @@ static BOOL LKCurrentHierarchyContainsSwiftUIItems(LKStaticHierarchyDataSource *
                 if (groupTask) {
                     [tasks addObject:groupTask];
                 }
-                if (item.isExpandable) {
+                if (item.isExpandable && item.hasPixelBearingSubitems) {
                     LookinStaticAsyncUpdateTask *soloTask = [self _taskFromDisplayItem:item type:LookinStaticAsyncUpdateTaskTypeSoloScreenshot];
                     if (soloTask) {
                         [tasks addObject:soloTask];
