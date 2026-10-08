@@ -211,6 +211,33 @@ extern NSString *const LKAppShowConsoleNotificationName;
     [self.searchTextFieldView.textField becomeFirstResponder];
 }
 
+- (BOOL)performKeyEquivalent:(NSEvent *)event {
+    NSEventModifierFlags modifiers = event.modifierFlags & NSEventModifierFlagDeviceIndependentFlagsMask;
+    NSResponder *responder = self.window.firstResponder;
+    BOOL listHasFocus = [responder isKindOfClass:NSView.class]
+        && [(NSView *)responder isDescendantOf:self.tableView];
+    if (listHasFocus && modifiers == NSEventModifierFlagCommand
+        && [event.charactersIgnoringModifiers.lowercaseString isEqualToString:@"c"]) {
+        [self copy:nil];
+        return YES;
+    }
+    return [super performKeyEquivalent:event];
+}
+
+- (void)copy:(id)sender {
+    LookinDisplayItem *item = self.dataSource.selectedItem;
+    if (!item) {
+        return;
+    }
+    NSString *objectIdentifier = [LKMCPObjectIdentifierFormatter objectIdentifierForDisplayItem:item];
+    if (objectIdentifier.length == 0) {
+        return;
+    }
+    NSPasteboard *pasteboard = NSPasteboard.generalPasteboard;
+    [pasteboard clearContents];
+    [pasteboard setString:objectIdentifier forType:NSPasteboardTypeString];
+}
+
 #pragma mark - NSTableView
 
 - (void)tableView:(LKTableView *)tableView didHoverAtRow:(NSInteger)row {
