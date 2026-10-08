@@ -217,7 +217,7 @@ final class StaticAsyncUpdateManager: NSObject {
         for item in dataSource.flatItems ?? [] where !item.isUserCustom() {
             if item.doNotFetchScreenshotReason == .fetchScreenshotPermitted {
                 appendIfNew(task(from: item, type: .groupScreenshot))
-                if item.isExpandable {
+                if item.isExpandable, item.hasPixelBearingSubitems() {
                     appendIfNew(task(from: item, type: .soloScreenshot))
                 }
             } else {
@@ -393,6 +393,10 @@ final class StaticAsyncUpdateManager: NSObject {
         let packages = Self.packages(from: newTasks)
         let request = DetailUpdateRequest(packages: packages)
         ongoingRequest = request
+        let requestStart = CFAbsoluteTimeGetCurrent()
+        var lastResponseTime = requestStart
+        var responseCount = 0
+        #log(.default, "[LookInsidePerf] host begin tasks=\(newTasks.count) packages=\(packages.count) fast=\(PreferenceManager.shared.fastMode.currentBOOLValue) maxTasks=\(PreferenceManager.shared.detailPackageMaxTasksCount) maxArea=\(PreferenceManager.shared.detailPackageMaxArea)")
         notifyTasksCountToDelegate()
 
         #log(.default, "AsyncUpdate - Will send \(NSNumber(value: newTasks.count), privacy: .public) tasks.")
@@ -402,12 +406,20 @@ final class StaticAsyncUpdateManager: NSObject {
             switch event {
             case let .value(value):
                 guard self.ongoingRequest === request else { return }
-                receive(details: value as? [DisplayItemDetail] ?? [], for: request)
+                let responseTime = CFAbsoluteTimeGetCurrent()
+                let details = value as? [DisplayItemDetail] ?? []
+                receive(details: details, for: request)
+                responseCount += 1
+                #log(.default, "[LookInsidePerf] host response=\(responseCount) details=\(details.count) gapMs=\((responseTime - lastResponseTime) * 1000) applyMs=\((CFAbsoluteTimeGetCurrent() - responseTime) * 1000) progress=\(request.finishedTasksCount)/\(request.tasksTotalCount) elapsedMs=\((CFAbsoluteTimeGetCurrent() - requestStart) * 1000)")
+                lastResponseTime = CFAbsoluteTimeGetCurrent()
             case let .failure(error):
+                #log(.error, "[LookInsidePerf] host error elapsedMs=\((CFAbsoluteTimeGetCurrent() - requestStart) * 1000) progress=\(request.finishedTasksCount)/\(request.tasksTotalCount) error=\(error.localizedDescription)")
                 fail(error, for: request)
             case .completion:
                 guard self.ongoingRequest === request else { return }
                 // A request the user cancelled ends here too.
+                let cancelled = request.tasksTotalCount > request.finishedTasksCount
+                #log(.default, "[LookInsidePerf] host end elapsedMs=\((CFAbsoluteTimeGetCurrent() - requestStart) * 1000) cancelled=\(cancelled) progress=\(request.finishedTasksCount)/\(request.tasksTotalCount)")
                 complete(request)
                 completion?()
             }
@@ -519,7 +531,7 @@ extension StaticAsyncUpdateManager {
                 task.taskType = .groupScreenshot
                 tasks.append(task)
             }
-            if item.isExpandable, let task = Self.reloadTask(from: item, appInfo: appInfo) {
+            if item.isExpandable, item.hasPixelBearingSubitems(), let task = Self.reloadTask(from: item, appInfo: appInfo) {
                 task.taskType = .soloScreenshot
                 tasks.append(task)
             }
