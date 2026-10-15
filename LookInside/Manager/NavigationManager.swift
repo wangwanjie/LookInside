@@ -10,7 +10,7 @@
 //
 
 import AppKit
-import UIFoundationSettingsUI
+import SwiftUI
 
 @MainActor
 final class NavigationManager: NSObject, NSWindowDelegate {
@@ -24,18 +24,7 @@ final class NavigationManager: NSObject, NSWindowDelegate {
 
     /// Kept for the app's lifetime rather than dropped on close, so the
     /// window opens again on the page the user left it on.
-    private(set) lazy var settingsWindowController = SettingsWindowController(
-        configuration: SettingsConfiguration(
-            title: String(localized: "Settings", comment: "Title of the Settings window."),
-            // The sidebar is 20 points wider than UIFoundation's default so
-            // "Private Discriminator" fits; the window grows by as much, so
-            // the pages keep the default width.
-            contentWidth: 735,
-            sidebarWidth: 205,
-            sidebarIconSize: 15
-        ),
-        pages: { SettingsPages.make() }
-    )
+    private(set) lazy var settingsWindowController = NSWindowController(window: makeSettingsWindow())
 
     private(set) var aboutWindowController: AboutWindowController?
     private var jsonWindowController: JSONAttributeWindowController?
@@ -61,6 +50,19 @@ final class NavigationManager: NSObject, NSWindowDelegate {
 
     @objc func showSettings() {
         settingsWindowController.showWindow(self)
+    }
+
+    private func makeSettingsWindow() -> NSWindow {
+        let window = NSWindow(
+            contentRect: NSRect(x: 0, y: 0, width: 735, height: 560),
+            styleMask: [.titled, .closable, .miniaturizable, .resizable],
+            backing: .buffered,
+            defer: false
+        )
+        window.title = String(localized: "Settings", comment: "Title of the Settings window.")
+        window.contentView = NSHostingView(rootView: SettingsPages())
+        window.center()
+        return window
     }
 
     @objc func showAbout() {

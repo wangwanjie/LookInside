@@ -1,5 +1,5 @@
 import AppKit
-import UIFoundationToolbox
+import UniformTypeIdentifiers
 
 /// Resolves the icon shown for the device an inspected app runs on.
 ///
@@ -36,9 +36,8 @@ final class DeviceIconProvider: NSObject {
 
     /// The full-colour CoreTypes icon for a physical device.
     private static func hardwareIcon(forModelIdentifier modelIdentifier: String, pointSize: CGFloat) -> NSImage? {
-        guard let icon = NSWorkspace.shared.box.declaredDeviceIcon(forModelIdentifier: modelIdentifier),
-              let resizedIcon = icon.copy() as? NSImage
-        else {
+        guard let type = declaredDeviceType(forModelIdentifier: modelIdentifier),
+              let resizedIcon = NSWorkspace.shared.icon(for: type).copy() as? NSImage else {
             return nil
         }
         // Resize a copy: NSWorkspace vends a shared multi-representation icns, and setting
@@ -53,7 +52,9 @@ final class DeviceIconProvider: NSObject {
     /// colour icon — the point is that a simulator reads as a simulator. Callers display
     /// it as a template image, so it picks up the surrounding control tint.
     private static func simulatorIcon(forModelIdentifier modelIdentifier: String, pointSize: CGFloat) -> NSImage? {
-        guard let symbolIcon = NSWorkspace.shared.box.declaredDeviceSymbolIcon(forModelIdentifier: modelIdentifier) else {
+        guard let type = declaredDeviceType(forModelIdentifier: modelIdentifier),
+              let symbolName = deviceSymbolName(for: type),
+              let symbolIcon = NSImage(systemSymbolName: symbolName, accessibilityDescription: nil) else {
             return nil
         }
         let symbolConfiguration = NSImage.SymbolConfiguration(pointSize: pointSize, weight: .regular)
@@ -88,5 +89,37 @@ final class DeviceIconProvider: NSObject {
         }
         boxedIcon.isTemplate = true
         return boxedIcon
+    }
+
+    private static func declaredDeviceType(forModelIdentifier modelIdentifier: String) -> UTType? {
+        let tagClass = UTTagClass(rawValue: "com.apple.device-model-code")
+        guard let type = UTType(tag: modelIdentifier, tagClass: tagClass, conformingTo: nil), type.isDeclared else {
+            return nil
+        }
+        return type
+    }
+
+    private static func deviceSymbolName(for type: UTType) -> String? {
+        var identifiers = Set(type.supertypes.map(\.identifier))
+        identifiers.insert(type.identifier)
+
+        let orderedMappings: [(String, String)] = [
+            ("com.apple.dynamic-island-iphone", "iphone.gen3"),
+            ("com.apple.homebuttonless-iphone", "iphone.gen2"),
+            ("com.apple.iphone", "iphone.gen1"),
+            ("com.apple.homebuttonless-ipad", "ipad"),
+            ("com.apple.ipad", "ipad.homebutton"),
+            ("com.apple.macbookpro-2021", "macbook.gen2"),
+            ("com.apple.mac.notched-laptop", "macbook.gen2"),
+            ("com.apple.macbookpro", "macbook"),
+            ("com.apple.macbookair", "macbook"),
+            ("com.apple.mac.laptop", "macbook"),
+            ("com.apple.macstudio", "macstudio"),
+            ("com.apple.macmini", "macmini"),
+            ("com.apple.imac", "desktopcomputer"),
+            ("com.apple.macpro", "macpro.gen3"),
+            ("com.apple.mac", "desktopcomputer"),
+        ]
+        return orderedMappings.first { identifiers.contains($0.0) }?.1
     }
 }

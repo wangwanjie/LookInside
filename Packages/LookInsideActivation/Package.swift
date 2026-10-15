@@ -12,7 +12,7 @@ let package = Package(
     ],
     dependencies: [
         .package(url: "https://github.com/simibac/ConfettiSwiftUI.git", from: "2.0.0"),
-        .package(url: "https://github.com/Lakr233/WindowAnimation.git", from: "1.0.0"),
+        .package(url: "https://github.com/Lakr233/WindowAnimation.git", exact: "1.1.0"),
     ],
     targets: [
         .target(

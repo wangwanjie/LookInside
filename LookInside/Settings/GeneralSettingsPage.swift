@@ -11,13 +11,12 @@ import AppKit
 import Foundation
 import LookInsideHostCore
 import SwiftUI
-import UIFoundationSettingsUI
 
 struct GeneralSettingsPage: View {
     let model: GeneralSettingsModel
 
     var body: some View {
-        SettingsForm {
+        Form {
             GeneralAppearanceSection(model: model)
             GeneralColorFormatSection(model: model)
             GeneralImageContrastSection(model: model)

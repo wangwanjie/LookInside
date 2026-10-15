@@ -14,26 +14,26 @@ enum LKMCPHierarchyParentWiringTests {
     }
 
     static func testModel(root: URL) throws {
-        let models = try source(at: "LookInside/MCPBridge/LKMCPBridgeInspectionModels.swift", root: root)
-        require(models.contains("public let parentObjectIdentifier: String?"), "view node model must expose parentObjectIdentifier")
-        require(models.contains("public struct LKMCPBridgeViewDetail: Sendable, Codable"), "details model must exist")
+        let models = try source(at: "LookInside/MCPBridge/MCPBridgeInspectionModels.swift", root: root)
+        require(models.contains("let parentObjectIdentifier: String?"), "view node model must expose parentObjectIdentifier")
+        require(models.contains("struct MCPBridgeViewDetail: Sendable, Codable"), "details model must exist")
     }
 
     static func testService(root: URL) throws {
-        let service = try source(at: "LookInside/MCPBridge/LKMCPBridgeInspectionService.swift", root: root)
-        let lookup = try source(at: "LookInside/MCPBridge/LKMCPBridgeLiveDocumentLookup.swift", root: root)
-        require(lookup.contains("static func parent(of item: LookinDisplayItem) -> LookinDisplayItem?"), "lookup must expose a parent accessor")
+        let service = try source(at: "LookInside/MCPBridge/MCPBridgeInspectionService.swift", root: root)
+        let lookup = try source(at: "LookInside/MCPBridge/MCPBridgeLiveDocumentLookup.swift", root: root)
+        require(lookup.contains("static func parent(of item: DisplayItem) -> DisplayItem?"), "lookup must expose a parent accessor")
         require(lookup.contains("item.value(forKey: \"superItem\")"), "lookup parent accessor must read superItem")
-        require(service.contains("let parentIdentity = LKMCPBridgeLiveDocumentLookup.parent(of: item).map("), "service must derive parent identity through the shared parent accessor")
+        require(service.contains("let parentIdentity = MCPBridgeLiveDocumentLookup.parent(of: item).map("), "service must derive parent identity through the shared parent accessor")
         require(service.contains("parentObjectIdentifier: parentIdentity"), "service must encode the parent object identifier")
         require(service.contains("makeViewNode(from: $0, remainingDepth: nextDepth, includeLayoutGuides: includeLayoutGuides, includeCells: includeCells)"), "service must recurse through children while preserving node filters")
     }
 
     static func testDetailsService(root: URL) throws {
-        let models = try source(at: "LookInside/MCPBridge/LKMCPBridgeInspectionModels.swift", root: root)
-        let details = try source(at: "LookInside/MCPBridge/LKMCPBridgeDetailsService.swift", root: root)
-        require(models.contains("public let parentObjectIdentifier: String?\n    public let groups: [LKMCPBridgeAttributeGroup]"), "view detail model must expose parentObjectIdentifier")
-        require(details.contains("parentObjectIdentifier: LKMCPBridgeLiveDocumentLookup.parent(of: resolved.displayItem).map("), "details.read must encode parent object identifier through the shared parent accessor")
+        let models = try source(at: "LookInside/MCPBridge/MCPBridgeInspectionModels.swift", root: root)
+        let details = try source(at: "LookInside/MCPBridge/MCPBridgeDetailsService.swift", root: root)
+        require(models.contains("let parentObjectIdentifier: String?\n    let groups: [MCPBridgeAttributeGroup]"), "view detail model must expose parentObjectIdentifier")
+        require(details.contains("parentObjectIdentifier: MCPBridgeLiveDocumentLookup.parent(of: resolved.displayItem).map("), "details.read must encode parent object identifier through the shared parent accessor")
     }
 
     static func main() throws {

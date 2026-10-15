@@ -1,15 +1,6 @@
 {
-  "originHash" : "83b40af5dbc1363bd059a3cac334f7d14332936a5740d4465a68a93cbd0efbdb",
+  "originHash" : "49e704702ef57078cc89d62c80a95574ddacda0640f4bd09dc24eb7498558396",
   "pins" : [
-    {
-      "identity" : "associatedobject",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/p-x9/AssociatedObject",
-      "state" : {
-        "revision" : "f358e1ccf6761b9d1d53136022a65c601cdc4da3",
-        "version" : "0.15.0"
-      }
-    },
     {
       "identity" : "confettiswiftui",
       "kind" : "remoteSourceControl",
@@ -17,24 +8,6 @@
       "state" : {
         "revision" : "79666d42b882bf7921b1941fa7c636d681d77980",
         "version" : "2.0.3"
-      }
-    },
-    {
-      "identity" : "displaylink",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/Lakr233/DisplayLink.git",
-      "state" : {
-        "revision" : "41bea2661e04bebcb1c4f15fc0b6197850100fdd",
-        "version" : "3.0.1"
-      }
-    },
-    {
-      "identity" : "frameworktoolbox",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/Mx-Iris/FrameworkToolbox",
-      "state" : {
-        "revision" : "3be067f4280e0764cd4b6cd3ed623698ac981114",
-        "version" : "0.9.0"
       }
     },
     {
@@ -56,30 +29,21 @@
       }
     },
     {
+      "identity" : "msdisplaylink",
+      "kind" : "remoteSourceControl",
+      "location" : "https://github.com/Lakr233/MSDisplayLink.git",
+      "state" : {
+        "revision" : "ac406dbb7dd329e256a555f929cd9cb94d809c7b",
+        "version" : "2.2.1"
+      }
+    },
+    {
       "identity" : "springinterpolation",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/Lakr233/SpringInterpolation.git",
       "state" : {
         "revision" : "cdb556516daa9b43c16aae9436dd39e19ff930fd",
         "version" : "1.4.0"
-      }
-    },
-    {
-      "identity" : "swift-literal-type-inference",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/p-x9/swift-literal-type-inference.git",
-      "state" : {
-        "revision" : "a67dc0c90511f0b036de8ee51ecba9243d1a5ec0",
-        "version" : "0.6.0"
-      }
-    },
-    {
-      "identity" : "swift-object-association",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/p-x9/swift-object-association.git",
-      "state" : {
-        "revision" : "93806cfecae1f198c894ed5585b93aff0e2d1f5a",
-        "version" : "0.5.0"
       }
     },
     {
@@ -101,21 +65,12 @@
       }
     },
     {
-      "identity" : "uifoundation",
-      "kind" : "remoteSourceControl",
-      "location" : "https://github.com/Mx-Iris/UIFoundation",
-      "state" : {
-        "revision" : "33ebdc39d890c26e3773cb5eba2817fe77e1ffee",
-        "version" : "0.15.2"
-      }
-    },
-    {
       "identity" : "windowanimation",
       "kind" : "remoteSourceControl",
       "location" : "https://github.com/Lakr233/WindowAnimation.git",
       "state" : {
-        "revision" : "c402e7787fa9877b814b93ff231b47ba7185c19a",
-        "version" : "1.1.1"
+        "revision" : "a7208253daa1547b65eb1fd744c34bb44528c110",
+        "version" : "1.1.0"
       }
     }
   ],

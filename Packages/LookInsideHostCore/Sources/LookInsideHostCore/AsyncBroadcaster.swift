@@ -1,5 +1,11 @@
 import Foundation
 
+/// Marks a value whose cross-task transfer is synchronised by the owner.
+/// AsyncBroadcaster serialises delivery and is used for actor-confined values.
+private struct AsyncBroadcasterTransfer<Value>: @unchecked Sendable {
+    let value: Value
+}
+
 /// Sends every value to all current subscribers. Each `subscribe` call
 /// returns a new `AsyncStream` with its own buffer.
 ///
@@ -82,7 +88,7 @@ public final class AsyncBroadcaster<Element>: @unchecked Sendable {
         // Each subscriber gets the same value. `Element` is not required to
         // be Sendable (see the type's note), so the compiler is told not to
         // track it; the Host yields and consumes on the main actor.
-        nonisolated(unsafe) let shared = value
+        let shared = AsyncBroadcasterTransfer(value: value)
         // Deliver outside `lock`: yielding to a stream whose consumer was
         // cancelled can run its termination handler on this thread, and that
         // handler takes `lock` (a deadlock seen in testing). `deliveryLock`
@@ -90,7 +96,7 @@ public final class AsyncBroadcaster<Element>: @unchecked Sendable {
         deliveryLock.withLock {
             let current = lock.withLock { Array(continuations.values) }
             for continuation in current {
-                continuation.yield(shared)
+                continuation.yield(shared.value)
             }
         }
     }

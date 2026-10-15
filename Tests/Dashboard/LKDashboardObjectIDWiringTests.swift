@@ -24,37 +24,34 @@ enum LKDashboardObjectIDWiringTests {
         }
         let root = URL(fileURLWithPath: CommandLine.arguments[1])
         let dashboard = try String(
-            contentsOf: root.appendingPathComponent("LookInside/Dashboard/LKDashboardViewController.m"),
+            contentsOf: root.appendingPathComponent("LookInside/Dashboard/DashboardViewController.swift"),
             encoding: .utf8
         )
         let lookup = try String(
-            contentsOf: root.appendingPathComponent("LookInside/MCPBridge/LKMCPBridgeLiveDocumentLookup.swift"),
+            contentsOf: root.appendingPathComponent("LookInside/MCPBridge/MCPBridgeLiveDocumentLookup.swift"),
             encoding: .utf8
         )
         let header = try String(
-            contentsOf: root.appendingPathComponent("LookInside/Dashboard/Search/LKDashboardHeaderView.m"),
+            contentsOf: root.appendingPathComponent("LookInside/Dashboard/Search/DashboardHeaderView.swift"),
             encoding: .utf8
         )
 
-        let layout = section(dashboard, from: "- (void)viewDidLayout", to: "- (NSArray<LookinAttributesGroup *> *)_groupListForDisplayItem:")
-        guard let objectRow = layout.range(of: "$(self.objectIDView)"),
-              let cardLoop = layout.range(of: "[self.groupList enumerateObjectsUsingBlock:") else {
+        let layout = section(dashboard, from: "override func viewDidLayout()", to: "// MARK: - Rendering")
+        guard let objectRow = layout.range(of: "objectIDView.dashboardLayout"),
+              let cardLoop = layout.range(of: "for group in groupList") else {
             require(false, "layout must contain Object ID row and card loop")
             return
         }
         require(objectRow.lowerBound < cardLoop.lowerBound, "Object ID row must be laid out before Class and all cards")
-        require(dashboard.contains("[self.cardContainerView addSubview:self.objectIDView]"), "Object ID row must live inside the card container")
+        require(dashboard.contains("cardContainerView.addSubview(objectIDView)"), "Object ID row must live inside the card container")
 
-        let reload = section(dashboard, from: "- (void)reloadWithGroupList:", to: "- (void)reloadCurrentDisplayItem")
-        require(reload.contains("self.staticDataSource.selectedItem"), "live/static selection must drive Object ID")
-        require(!reload.contains("self.readDataSource.selectedItem"), "archive/read selection must not expose MCP Object ID")
-        require(reload.contains("objectIdentifierForDisplayItem:selectedItem"), "Dashboard must call shared formatter")
-        require(reload.contains("renderWithObjectIdentifier:objectIdentifier"), "selection reload must refresh the row")
-        require(dashboard.contains("RACObserve(self.staticDataSource, selectedItem)"), "selection changes must drive Dashboard reload")
+        let reload = section(dashboard, from: "private func reload(groupList list:", to: "@objc func reloadCurrentDisplayItem")
+        require(reload.contains("currentDataSource()?.selectedItem"), "hierarchy selection must drive Object ID")
+        require(reload.contains("LKMCPObjectIdentifierFormatter.objectIdentifier(for:"), "Dashboard must call shared formatter")
+        require(reload.contains("objectIDView.render(objectIdentifier:"), "selection reload must refresh the row")
+        require(dashboard.contains("observeSelectedItem(of:"), "selection changes must drive Dashboard reload")
 
-        let searchToggle = section(dashboard, from: "- (void)dashboardHeaderView:(LKDashboardHeaderView *)view didToggleActive:", to: "#pragma mark - <LKDashboardSearchMethodsViewDelegate>")
-        require(searchToggle.contains("self.cardContainerView.animator.hidden = YES"), "search activation must hide the Object ID container")
-        require(searchToggle.contains("self.cardContainerView.animator.hidden = NO"), "search dismissal must restore the Object ID container")
+        require(dashboard.contains("if !cardContainerView.isHidden"), "Object ID row must follow the same search visibility as cards")
 
         require(lookup.contains("LKMCPObjectIdentifierFormatter.objectIdentifier(for: item)"), "MCP must call shared formatter")
         require(!lookup.contains("String(format: \"0x%lx\""), "MCP lookup must not duplicate hex formatting")

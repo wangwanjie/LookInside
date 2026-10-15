@@ -12,7 +12,6 @@
 //
 
 import AppKit
-import Sparkle
 
 /// The menu sends each command to the key window's controller, and enables
 /// the item only when the controller implements the method.
@@ -44,7 +43,6 @@ final class AppMenuManager: NSObject, NSMenuDelegate {
     private enum Tag {
         static let about = 11
         static let settings = 12
-        static let checkUpdates = 13
         static let activateSwiftUISupport = 14
         static let swiftUISupportLicense = 15
         static let refreshSwiftUISupportLicense = 16
@@ -90,29 +88,12 @@ final class AppMenuManager: NSObject, NSMenuDelegate {
     ]
 
     private var recentDocumentsMenu: NSMenu?
-    private var updaterController: SPUStandardUpdaterController?
 
     // MARK: - Setup
 
-    /// Starts the updater when the build can use it, and installs the main
-    /// menu.
+    /// Installs the main menu.
     func setup() {
-        if shouldStartSparkleUpdater {
-            updaterController = SPUStandardUpdaterController(startingUpdater: true, updaterDelegate: nil, userDriverDelegate: nil)
-        }
         installMainMenu()
-    }
-
-    /// Only the release and internal-snapshot workflows inject
-    /// SPARKLE_PUBLIC_ED_KEY (both refuse to build without it). Every other
-    /// build -- Debug, or a local Release build, signed or not -- leaves
-    /// SUPublicEDKey empty, and Sparkle then refuses to start and puts up a
-    /// modal "Unable to Check For Updates" alert on every launch. Skip the
-    /// updater entirely in that case; dropping a key into
-    /// Configuration/custom.xcconfig restores the real update flow locally.
-    private var shouldStartSparkleUpdater: Bool {
-        let publicKey = Bundle.main.object(forInfoDictionaryKey: "SUPublicEDKey") as? String
-        return !(publicKey ?? "").isEmpty
     }
 
     private var applicationName: String {
@@ -152,8 +133,6 @@ final class AppMenuManager: NSObject, NSMenuDelegate {
         menu.addItem(item(String(format: NSLocalizedString("About %@", comment: ""), appName), action: #selector(handleAbout), tag: Tag.about))
         menu.addItem(.separator())
         menu.addItem(item(NSLocalizedString("Settings…", comment: ""), action: #selector(handleSettings), key: ",", modifiers: .command, tag: Tag.settings))
-        menu.addItem(.separator())
-        menu.addItem(item(NSLocalizedString("Check for Updates…", comment: ""), action: #selector(handleCheckUpdates), tag: Tag.checkUpdates))
         menu.addItem(.separator())
         menu.addItem(Self.standardItem(String(format: NSLocalizedString("Hide %@", comment: ""), appName), action: #selector(NSApplication.hide(_:)), key: "h", modifiers: .command))
         menu.addItem(Self.standardItem(NSLocalizedString("Hide Others", comment: ""), action: #selector(NSApplication.hideOtherApplications(_:)), key: "h", modifiers: [.command, .option]))
@@ -372,10 +351,6 @@ final class AppMenuManager: NSObject, NSMenuDelegate {
         for menuItem in menu.items {
             if let selector = Self.delegatingSelectors[menuItem.tag] {
                 menuItem.isEnabled = windowController?.responds(to: selector) ?? false
-            } else if menuItem.tag == Tag.checkUpdates {
-                // Nil whenever the build carries no Sparkle public key; see
-                // shouldStartSparkleUpdater.
-                menuItem.isEnabled = updaterController != nil
             } else if menuItem.action == #selector(NSDocument.saveAs(_:)) {
                 let document = NSApp.keyWindow.flatMap { NSDocumentController.shared.document(for: $0) }
                 menuItem.isEnabled = document.map { !$0.writableTypes(for: .saveAsOperation).isEmpty } ?? false
@@ -432,10 +407,6 @@ final class AppMenuManager: NSObject, NSMenuDelegate {
 
     @objc private func handleSettings() {
         NavigationManager.shared.showSettings()
-    }
-
-    @objc private func handleCheckUpdates() {
-        updaterController?.checkForUpdates(nil)
     }
 
     @objc private func handleActivateSwiftUISupport() {

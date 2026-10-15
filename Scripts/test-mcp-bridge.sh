@@ -47,7 +47,7 @@ swiftc -parse-as-library "$DETAIL_OBJECT_IDENTIFIER_SELECTOR" "$DETAIL_OBJECT_ID
 
 # Both RPC 203 routes must use the transport OID selector instead of the
 # display OID exposed on the MCP wire.
-for service in "$ROOT/LookInside/MCPBridge/LKMCPBridgeDetailsService.swift" "$ROOT/LookInside/MCPBridge/LKMCPBridgeScreenshotService.swift"; do
+for service in "$ROOT/LookInside/MCPBridge/MCPBridgeDetailsService.swift" "$ROOT/LookInside/MCPBridge/MCPBridgeScreenshotService.swift"; do
     if ! grep -Fq "hierarchyDetailsObjectIdentifier" "$service"; then
         echo "FAIL: $(basename "$service") must select an RPC 203-compatible object identifier" >&2
         exit 1
@@ -63,7 +63,7 @@ done
 # so this is a textual guard on a mistake that is easy to repeat every time a
 # new route is added by copying an existing one.
 ordering_failures=0
-for service in "$ROOT"/LookInside/MCPBridge/LKMCPBridge*Service.swift; do
+for service in "$ROOT"/LookInside/MCPBridge/MCPBridge*Service.swift; do
 	nserror_line=$(grep -n "catch let error as NSError" "$service" | head -1 | cut -d: -f1)
 	racbridge_line=$(grep -n "catch RACBridgeError" "$service" | head -1 | cut -d: -f1)
 	if [ -n "$nserror_line" ] && [ -n "$racbridge_line" ] && [ "$nserror_line" -lt "$racbridge_line" ]; then

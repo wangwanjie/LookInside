@@ -1,8 +1,7 @@
 #!/bin/bash
 #
 # Fails when a LookInside app build still carries DEBUG-only activation
-# overrides, the DEBUG end-to-end dump, or a private key, or (in release
-# mode) ships without the Sparkle updater configured.
+# overrides, the DEBUG end-to-end dump, or a private key.
 #
 # Usage:
 #   Scripts/check-host-release-clean.sh [--release-strict | --local-build] <LookInside.app|.xcarchive|.zip|.tar.gz|dir>...
@@ -31,17 +30,11 @@
 #   - the demangled symbol table of a Mach-O file names ActivationDebugOverrides
 #     (Swift mangling can split the name, so the raw search alone is not enough);
 #   - Scripts/scan-private-keys.sh finds a private key;
-#   - release mode only: it holds no app bundle, or an outermost app bundle's
-#     Contents/Info.plist has an empty or missing SUPublicEDKey or SUFeedURL.
-#     Only the release workflows inject SPARKLE_PUBLIC_ED_KEY; a build without
-#     it silently skips the updater (LKAppMenuManager), so a release must
-#     never ship one.
-# Release mode (--release-strict) is the default. --local-build skips only
-# the Sparkle check, for local Release builds that have no updater key.
+# --release-strict and --local-build are accepted for caller compatibility.
 # A .zip or .tar.gz is unpacked into a temporary directory under
 # CHECK_HOST_RELEASE_SCRATCH (default: $TMPDIR).
 #
-# Exit status: 0 clean, 1 an override, key or missing updater setting was
+# Exit status: 0 clean, 1 an override or key was
 # found, 2 on a usage error or when a path holds no Mach-O file to check.
 
 set -uo pipefail
@@ -51,11 +44,10 @@ usage() {
 	exit 2
 }
 
-CHECK_SPARKLE=1
 while [ "$#" -gt 0 ]; do
 	case "$1" in
-	--release-strict) CHECK_SPARKLE=1 ;;
-	--local-build) CHECK_SPARKLE=0 ;;
+	--release-strict) ;;
+	--local-build) ;;
 	-h | --help) usage ;;
 	--)
 		shift
@@ -138,50 +130,6 @@ check_tree() {
 		report "$label: private key scan failed"
 	fi
 
-	if [ "$CHECK_SPARKLE" -eq 1 ]; then
-		check_sparkle "$root" "$label"
-	fi
-}
-
-# The Info.plist of every outermost app bundle under root (root itself when it
-# is one); apps nested inside another bundle, such as Sparkle's Updater.app,
-# are skipped.
-outermost_app_plists() {
-	local root="$1" plist relative
-	if [ -f "$root/Contents/Info.plist" ] && [ "${root%.app}" != "$root" ]; then
-		echo "$root/Contents/Info.plist"
-		return
-	fi
-	while IFS= read -r -d '' plist; do
-		relative="${plist#"$root"/}"
-		relative="${relative%/Contents/Info.plist}"
-		case "$relative" in
-		*.app/*) continue ;;
-		esac
-		echo "$plist"
-	done < <(find "$root" -path '*.app/Contents/Info.plist' -type f -print0)
-}
-
-check_sparkle() {
-	local root="$1" label="$2"
-	local apps=0 plist relative key value
-	while IFS= read -r plist; do
-		apps=$((apps + 1))
-		relative="${plist#"$root"/}"
-		[ "$relative" = "$plist" ] && relative="$(basename "$root")/Contents/Info.plist"
-		for key in SUPublicEDKey SUFeedURL; do
-			value="$(plutil -extract "$key" raw -o - "$plist" 2>/dev/null)"
-			value="${value//[[:space:]]/}"
-			if [ -z "$value" ] || [ "${value#\$(}" != "$value" ]; then
-				report "$label!$relative: $key is empty or missing (release builds must ship the Sparkle updater)"
-			fi
-		done
-	done < <(outermost_app_plists "$root")
-	if [ "$apps" -eq 0 ]; then
-		report "$label: no app bundle to check the Sparkle settings of"
-		return
-	fi
-	echo "checked Sparkle settings of $apps app bundle(s) in $label"
 }
 
 index=0

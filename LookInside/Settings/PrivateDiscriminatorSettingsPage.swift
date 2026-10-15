@@ -9,7 +9,6 @@
 
 import AppKit
 import SwiftUI
-import UIFoundationSettingsUI
 
 struct PrivateDiscriminatorSettingsPage: View {
     private let store = PrivateDiscriminatorStore.shared
@@ -19,7 +18,7 @@ struct PrivateDiscriminatorSettingsPage: View {
     @State private var importError: String?
 
     var body: some View {
-        SettingsForm {
+        Form {
             PrivateDiscriminatorFeatureSection(store: store)
             PrivateDiscriminatorDefaultLibrarySection(store: store, importError: $importError)
 
