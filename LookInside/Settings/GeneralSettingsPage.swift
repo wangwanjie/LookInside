@@ -324,7 +324,7 @@ private struct GeneralDetailBatchSection: View {
         } header: {
             Text("Hierarchy Details")
         } footer: {
-            Text("Smaller batches show loading progress sooner. Screenshot area is measured in square points; one screenshot larger than the limit is kept intact. Defaults: 20 tasks and 500,000 square points.")
+            Text("Smaller batches show loading progress sooner but take longer overall. Screenshot area is measured in square points; one screenshot larger than the limit is kept intact. Defaults: 100 tasks and 2,000,000 square points.")
         }
     }
 }

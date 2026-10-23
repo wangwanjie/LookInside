@@ -25,8 +25,11 @@ let initialPreviewScale: CGFloat = 0.27
 /// The default hierarchy request timeout, in seconds.
 let defaultHierarchyRequestTimeoutInterval: TimeInterval = 15
 let defaultLicenseHandshakeTimeoutInterval: TimeInterval = 5
-let defaultDetailPackageMaxTasksCount = 20
-let defaultDetailPackageMaxArea = 500_000
+/// 详情批次上限默认值，与上游前台 / 整树请求的固定值（DetailTaskPackaging.maxCount / maxArea）一致。
+/// 同事原默认 20 / 500,000 偏小：批次越多、请求越久，越容易在展开、滚动时被取消重发，
+/// 配合 2.x Server 的快照对象释放会导致截图渲染不出来。预取批次仍单独限制为 20 / 500,000。
+let defaultDetailPackageMaxTasksCount = 100
+let defaultDetailPackageMaxArea = 2_000_000
 
 /// Posted when a dashboard section is added or removed.
 let NotificationName_DidChangeSectionShowing = "NotificationName_DidChangeSectionShowing"

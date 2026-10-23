@@ -1,6 +1,70 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "Hierarchy Details" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Hierarchy Details"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "层级详情"
+          }
+        }
+      }
+    },
+    "Tasks per batch" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Tasks per batch"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "每批任务数"
+          }
+        }
+      }
+    },
+    "Screenshot area per batch" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Screenshot area per batch"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "每批截图面积"
+          }
+        }
+      }
+    },
+    "Smaller batches show loading progress sooner but take longer overall. Screenshot area is measured in square points; one screenshot larger than the limit is kept intact. Defaults: 100 tasks and 2,000,000 square points." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Smaller batches show loading progress sooner but take longer overall. Screenshot area is measured in square points; one screenshot larger than the limit is kept intact. Defaults: 100 tasks and 2,000,000 square points."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "批次越小，加载进度显示越早，但总耗时越长。截图面积以平方点计算；单个超过上限的截图不会被拆分。默认：100 个任务、2,000,000 平方点。"
+          }
+        }
+      }
+    },
     "Detail Batch Tasks" : {
       "localizations" : {
         "en" : {
