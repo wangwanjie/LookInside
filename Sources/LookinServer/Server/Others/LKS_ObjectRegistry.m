@@ -85,8 +85,11 @@
     for (NSNumber *oid in oids) {
         NSObject *object = self.hierarchySnapshotObjects[oid];
         if (object) {
+            // 酷狗版：不再从快照中移除。3.x Host 在展开、滚动、选中时会取消进行中的详情请求并重新下发，
+            // 若这里移除，被取消请求已取走的对象随 handler 一起释放，重发时只能拿到已销毁的对象，
+            // 返回 ObjectGone，界面上的截图就渲染不出来（批次越小、请求越久越容易出现）。
+            // 快照对象在下一次层级请求 beginHierarchySnapshot 时统一释放。
             objects[oid] = object;
-            [self.hierarchySnapshotObjects removeObjectForKey:oid];
         }
     }
     return objects.copy;

@@ -29,7 +29,8 @@
 /// Keeps an object alive between the hierarchy response and its detail request.
 - (void)retainObjectForCurrentHierarchySnapshot:(NSObject *)object oid:(unsigned long)oid;
 
-/// Transfers requested objects to a detail handler and removes them from the snapshot.
+/// Returns the requested snapshot objects for a detail handler. The snapshot keeps them until the next
+/// hierarchy snapshot begins, so a detail request that the host cancels and re-sends still finds them.
 - (NSDictionary<NSNumber *, NSObject *> *)consumeHierarchySnapshotObjectsWithOids:(NSArray<NSNumber *> *)oids;
 
 @end
