@@ -134,7 +134,7 @@ note_release_prerequisites() {
 	fi
 	if [[ ! -d "$MCP_REPO" ]]; then
 		log "LookInside-MCP repo not found; building DMG without the bundled lookinside-mcp CLI."
-		log "The host MCP bridge still runs; point MCP clients at an official lookinside-mcp binary."
+		log "MCP clients can use the bundled shim: node \"<app>/Contents/Resources/MCP/lookinside-mcp-shim.mjs\"."
 	fi
 }
 
