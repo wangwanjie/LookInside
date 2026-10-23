@@ -2,10 +2,26 @@
 
 set -euo pipefail
 
-cd "$(dirname "$0")/.."
+HOST_PROJECT_DIR="$(cd "$(dirname "$0")/.." && pwd)"
+SERVER_SOURCE_ROOT="${LOOKINSIDE_SERVER_SOURCE_ROOT:-$HOST_PROJECT_DIR}"
+
+if [ ! -d "$SERVER_SOURCE_ROOT/Sources/LookinServer/Server" ] ||
+	! grep -q '"LookinServerDynamic"' "$SERVER_SOURCE_ROOT/Package.swift" 2>/dev/null; then
+	echo "Cannot build the Server XCFramework: runtime sources are missing from $SERVER_SOURCE_ROOT." >&2
+	echo "The host repository no longer contains LookinServerDynamic or Sources/LookinServer." >&2
+	echo "Set LOOKINSIDE_SERVER_SOURCE_ROOT to a Server source checkout containing Sources/LookinServer and LookInside.xcworkspace." >&2
+	exit 1
+fi
+
+cd "$SERVER_SOURCE_ROOT"
 
 PROJECT_DIR="$PWD"
-WORKSPACE_PATH="LookInside.xcworkspace"
+WORKSPACE_PATH="$PROJECT_DIR/LookInside.xcworkspace"
+
+if [ ! -d "$WORKSPACE_PATH" ]; then
+	echo "Missing Server workspace: $WORKSPACE_PATH" >&2
+	exit 1
+fi
 CONFIGURATION="${CONFIGURATION:-Release}"
 SKIP_BUILD="${SKIP_BUILD:-0}"
 MIN_IOS_VERSION="${MIN_IOS_VERSION:-12.0}"
