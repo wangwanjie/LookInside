@@ -65,6 +65,10 @@ typedef NS_ENUM(NSInteger, LookinAppInfoDevice) {
 /// 是几倍的屏幕
 @property(nonatomic, assign) double screenScale;
 @property(nonatomic, assign) NSTimeInterval cachedTimestamp;
+/// 酷狗版兼容上游 3.x Mac 端：3.x Host 只接受上报 hierarchyAcquisitionProtocolVersion >= 1 的 Server，
+/// 否则视为 Server 过旧并断开。本 Server 按同步方式一次返回 HierarchyInfo、SwiftUI 详情内联返回，
+/// 这两种情况 3.x Host 都能处理，因此上报 1。编码键与 3.x 的 InspectedAppInfo 一致，值为 0 时不编码。
+@property(nonatomic, assign) NSUInteger hierarchyAcquisitionProtocolVersion;
 
 - (BOOL)isEqualToAppInfo:(LookinAppInfo *)info;
 

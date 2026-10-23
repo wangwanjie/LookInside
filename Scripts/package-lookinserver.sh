@@ -174,13 +174,17 @@ stage_framework_bundle() {
 	if [ "$COPY_RUNTIME_HEADERS" = "1" ]; then
 		copy_public_headers "$framework_contents_dir/Headers"
 
+		# Xcode 16 及以前的中间目录名为 <Target>.build，Xcode 26+ 为 <Target>-t.build，两者都查找
+		swift_header=""
 		swift_header_dir="$derived_dir/Build/Intermediates.noindex/LookInside.build/$configuration_dir/$SWIFT_HEADER_TARGET.build/Objects-normal"
-		for arch in arm64 x86_64; do
-			candidate="$swift_header_dir/$arch/$SWIFT_HEADER_TARGET-Swift.h"
-			if [ -f "$candidate" ]; then
-				swift_header="$candidate"
-				break
-			fi
+		for target_dir_name in "$SWIFT_HEADER_TARGET.build" "$SWIFT_HEADER_TARGET-t.build"; do
+			for arch in arm64 x86_64; do
+				candidate="$derived_dir/Build/Intermediates.noindex/LookInside.build/$configuration_dir/$target_dir_name/Objects-normal/$arch/$SWIFT_HEADER_TARGET-Swift.h"
+				if [ -f "$candidate" ]; then
+					swift_header="$candidate"
+					break 2
+				fi
+			done
 		done
 		if [ -z "$swift_header" ]; then
 			echo "Missing generated Swift header for $sdk: $swift_header_dir" >&2

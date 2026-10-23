@@ -1,6 +1,6 @@
 Pod::Spec.new do |spec|
   spec.name = 'LookInsideServer'
-  spec.version = '2.3.10-kg'
+  spec.version = '2.3.13-kg'
   spec.summary = 'Local development pod for the LookInsideServer XCFramework.'
   spec.description = <<-DESC
     Binary CocoaPods wrapper for LookInsideServer.xcframework used in local
@@ -11,10 +11,10 @@ Pod::Spec.new do |spec|
   spec.author = { 'HenryLi' => 'henryli@tencentmusic.com' }
   spec.source = { :http => "http://172.17.13.138/ftpfanxingroot/#{spec.name}/#{spec.version}.zip", :type => "zip" }
 
-  spec.ios.deployment_target = '12.0'
+  spec.ios.deployment_target = '15.0'
   spec.osx.deployment_target = '14.0'
 
   spec.vendored_frameworks = 'LookInsideServer.xcframework'
-  spec.preserve_paths = 'LookInsideServer.xcframework'
+  spec.preserve_paths = 'LookInsideServer.xcframework', 'doc/*'
   spec.requires_arc = false
 end

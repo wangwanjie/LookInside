@@ -135,9 +135,10 @@ NSString *const LKS_ConnectionDidEndNotificationName = @"LKS_ConnectionDidEndNot
 - (void)_tryToListenOnPortFrom:(int)fromPort to:(int)toPort current:(int)currentPort  {
     Lookin_PTChannel *channel = [Lookin_PTChannel channelWithDelegate:self];
     channel.targetPort = currentPort;
-    // A dual-stack listener preserves the traditional usbmux connection while
-    // making the server reachable through the IPv6 CoreDevice developer tunnel.
-    [channel listenOnPort:currentPort IPv6Address:in6addr_any callback:^(NSError *error) {
+    // 酷狗版：只监听本机回环地址（usbmux / 模拟器均通过 127.0.0.1 连接）。
+    // 同事为 CoreDevice 隧道改成的 [::] 全网卡监听会让同一网络下的其他人也能连上调试端口，
+    // CoreDevice 真机连接暂不移植，因此恢复为回环监听。
+    [channel listenOnPort:currentPort IPv4Address:INADDR_LOOPBACK callback:^(NSError *error) {
         if (error) {
             if (error.code == 48) {
                 // 该地址已被占用
@@ -147,17 +148,17 @@ NSString *const LKS_ConnectionDidEndNotificationName = @"LKS_ConnectionDidEndNot
             
             if (currentPort < toPort) {
                 // 尝试下一个端口
-                NSLog(@"LookinServer - [::]:%d is unavailable(%@). Will try anothor address ...", currentPort, error);
+                NSLog(@"LookinServer - 127.0.0.1:%d is unavailable(%@). Will try anothor address ...", currentPort, error);
                 [self _tryToListenOnPortFrom:fromPort to:toPort current:(currentPort + 1)];
             } else {
                 // 所有端口都尝试完毕，全部失败
-                NSLog(@"LookinServer - [::]:%d is unavailable(%@).", currentPort, error);
+                NSLog(@"LookinServer - 127.0.0.1:%d is unavailable(%@).", currentPort, error);
                 NSLog(@"LookinServer - Connect failed in the end.");
             }
             
         } else {
             // 成功
-            NSLog(@"LookinServer - Listening on [::]:%d (CoreDevice + usbmux) with channel %@.", currentPort, channel.debugTag);
+            NSLog(@"LookinServer - Listening on 127.0.0.1:%d with channel %@.", currentPort, channel.debugTag);
             // 此时 peerChannel_ 状态为 listening
             self.peerChannel_ = channel;
         }

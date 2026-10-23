@@ -93,6 +93,7 @@ static NSString *LookinAppInfoMacHostLocalizedName(void) {
     newAppInfo.screenScale = self.screenScale;
     newAppInfo.appInfoIdentifier = self.appInfoIdentifier;
     newAppInfo.cachedTimestamp = self.cachedTimestamp;
+    newAppInfo.hierarchyAcquisitionProtocolVersion = self.hierarchyAcquisitionProtocolVersion;
     return newAppInfo;
 }
 
@@ -120,6 +121,7 @@ static NSString *LookinAppInfoMacHostLocalizedName(void) {
         self.screenScale = [aDecoder decodeDoubleForKey:@"screenScale"];
         self.appInfoIdentifier = [aDecoder decodeIntegerForKey:@"appInfoIdentifier"];
         self.shouldUseCache = [aDecoder decodeBoolForKey:@"shouldUseCache"];
+        self.hierarchyAcquisitionProtocolVersion = (NSUInteger)[aDecoder decodeIntegerForKey:@"hierarchyAcquisitionProtocolVersion"];
     }
     return self;
 }
@@ -155,6 +157,9 @@ static NSString *LookinAppInfoMacHostLocalizedName(void) {
     [aCoder encodeDouble:self.screenScale forKey:@"screenScale"];
     [aCoder encodeInteger:self.appInfoIdentifier forKey:@"appInfoIdentifier"];
     [aCoder encodeBool:self.shouldUseCache forKey:@"shouldUseCache"];
+    if (self.hierarchyAcquisitionProtocolVersion != 0) {
+        [aCoder encodeInteger:(NSInteger)self.hierarchyAcquisitionProtocolVersion forKey:@"hierarchyAcquisitionProtocolVersion"];
+    }
 }
 
 + (BOOL)supportsSecureCoding {
@@ -195,11 +200,14 @@ static NSString *LookinAppInfoMacHostLocalizedName(void) {
         LookinAppInfo *info = [LookinAppInfo new];
         info.appInfoIdentifier = selfIdentifier;
         info.shouldUseCache = YES;
+        // 使用缓存时也上报，避免 3.x Host 判定 Server 过旧
+        info.hierarchyAcquisitionProtocolVersion = 1;
         return info;
     }
     
     LookinAppInfo *info = [[LookinAppInfo alloc] init];
     info.serverReadableVersion = LOOKIN_SERVER_READABLE_VERSION;
+    info.hierarchyAcquisitionProtocolVersion = 1;
 // Report Swift optimization as enabled whenever the Swift-aware build is
 // compiled in. The CocoaPods subspec path defines LOOKIN_SERVER_SWIFT_ENABLED;
 // the SwiftPM / XCFramework path defines SPM_LOOKIN_SERVER_ENABLED (which in
