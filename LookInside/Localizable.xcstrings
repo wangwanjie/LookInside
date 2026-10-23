@@ -1,6 +1,214 @@
 {
   "sourceLanguage" : "en",
   "strings" : {
+    "Detail Batch Tasks" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Detail Batch Tasks"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "详情每包任务数"
+          }
+        }
+      }
+    },
+    "Maximum tasks per batch (1–100). Default: 20. Applies to the next detail request." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Maximum tasks per batch (1–100). Default: 20. Applies to the next detail request."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "每包最多 1–100 个任务，默认 20。下次详情请求生效。"
+          }
+        }
+      }
+    },
+    "Detail Batch Screenshot Area" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Detail Batch Screenshot Area"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "详情每包截图面积"
+          }
+        }
+      }
+    },
+    "Maximum total screenshot frame area per batch, in square points. Default: 500000. A single larger screenshot is not split." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Maximum total screenshot frame area per batch, in square points. Default: 500000. A single larger screenshot is not split."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "每包截图 frame 总面积上限，单位平方点，默认 500000。单张超限截图不会拆分。"
+          }
+        }
+      }
+    },
+    "Progress" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Progress"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "已完成"
+          }
+        }
+      }
+    },
+    "Copy Code" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Copy Code"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "复制代码"
+          }
+        }
+      }
+    },
+    "Copy Object ID" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Copy Object ID"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "复制对象 ID"
+          }
+        }
+      }
+    },
+    "Copy View/Layer location" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Copy View/Layer location"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "复制 View/Layer 所在位置"
+          }
+        }
+      }
+    },
+    "Custom Properties" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Custom Properties"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "自定义属性"
+          }
+        }
+      }
+    },
+    "Implement this method in a UIView or CALayer subclass, then reload the hierarchy." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Implement this method in a UIView or CALayer subclass, then reload the hierarchy."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "在 UIView 或 CALayer 子类中实现此方法，然后重新加载层级。"
+          }
+        }
+      }
+    },
+    "Object ID" : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Object ID"
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "对象 ID"
+          }
+        }
+      }
+    },
+    "Supported types: string, number, bool, color, rect, size, point, insets, shadow, enum, json." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Supported types: string, number, bool, color, rect, size, point, insets, shadow, enum, json."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "支持类型：string、number、bool、color、rect、size、point、insets、shadow、enum、json。"
+          }
+        }
+      }
+    },
+    "Top-level title overrides the inspected object's display name. In each property, title names the row, section groups it, valueType selects its renderer or editor, and value is the current value. retainedSetter makes string, number, bool, color, rect, size, point, insets, and enum values editable; omit it for read-only values. shadow and json are read-only." : {
+      "localizations" : {
+        "en" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "Top-level title overrides the inspected object's display name. In each property, title names the row, section groups it, valueType selects its renderer or editor, and value is the current value. retainedSetter makes string, number, bool, color, rect, size, point, insets, and enum values editable; omit it for read-only values. shadow and json are read-only."
+          }
+        },
+        "zh-Hans" : {
+          "stringUnit" : {
+            "state" : "translated",
+            "value" : "顶层 title 会覆盖被检查对象的显示名称。每个属性中的 title 是行标题，section 用于分组，valueType 决定渲染器或编辑器，value 是当前值。string、number、bool、color、rect、size、point、insets 和 enum 可通过 retainedSetter 编辑；省略时为只读。shadow 和 json 仅支持只读。"
+          }
+        }
+      }
+    },
     "All Pages" : {
       "localizations" : {
         "zh-Hans" : {

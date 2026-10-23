@@ -76,8 +76,46 @@ enum MCPBridgeLiveDocumentLookup {
     /// Stays in sync with the form returned by `hierarchy.read` so
     /// callers can round-trip identifiers across bridge methods.
     static func objectIdentifierString(for item: DisplayItem) -> String {
-        let oid = item.displayingObject()?.oid ?? 0
-        return String(format: "0x%lx", oid)
+        LKMCPObjectIdentifierFormatter.objectIdentifier(for: item) ?? "0x0"
+    }
+
+    /// Selects the runtime identifier accepted by RPC 203 (`HierarchyDetails`).
+    /// This is deliberately distinct from `objectIdentifierString(for:)`: the
+    /// latter identifies the display object for the MCP wire contract, while
+    /// an iOS target's server resolves detail tasks through CALayer.
+    ///
+    /// 与 GUI 拉取详情时的选择规则（StaticAsyncUpdateManager.task(from:type:context:)）保持一致：
+    /// window 用 windowObject，layout guide / cell 用 kindObject，SwiftUI 自定义节点用
+    /// customDetailOid；其余节点在 macOS 目标或存在独立 backing layer 节点时优先 view oid，
+    /// 否则（iOS）优先 layer oid。
+    static func hierarchyDetailsObjectIdentifier(
+        for item: DisplayItem,
+        targetAppInfo: InspectedAppInfo?
+    ) -> UInt? {
+        let oid: UInt
+        switch item.resolvedNodeKind() {
+        case .window, .windowScene:
+            oid = item.windowObject?.oid ?? 0
+        case .layoutGuide, .cell:
+            oid = item.kindObject?.oid ?? 0
+        case .custom:
+            oid = item.customDetailOid
+        default:
+            let prefersViewOid = AppHelper.appInfoLooksLikeMacTarget(targetAppInfo) || item.ownsSeparateBackingLayerNode()
+            oid = LKMCPBridgeDetailObjectIdentifierSelector.select(
+                targetIsMac: prefersViewOid,
+                layerObjectIdentifier: item.layerObject?.oid ?? 0,
+                viewObjectIdentifier: item.viewObject?.oid ?? 0,
+                windowObjectIdentifier: item.windowObject?.oid ?? 0
+            ) ?? 0
+        }
+        return oid != 0 ? oid : nil
+    }
+
+    /// Reads the Objective-C `superItem` property without going through the
+    /// Swift importer, which renames it to the reserved keyword `super`.
+    static func parent(of item: DisplayItem) -> DisplayItem? {
+        item.value(forKey: "superItem") as? DisplayItem
     }
 
     /// The item's rectangle in the root coordinate space.

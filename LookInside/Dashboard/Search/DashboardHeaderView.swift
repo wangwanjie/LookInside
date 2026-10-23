@@ -11,6 +11,7 @@ import AppKit
 protocol DashboardHeaderViewDelegate: AnyObject {
     func dashboardHeaderView(_ view: DashboardHeaderView, didToggleActive isActive: Bool)
     func dashboardHeaderView(_ view: DashboardHeaderView, didInputString string: String)
+    func dashboardHeaderViewDidRequestCustomPropertiesGuide(_ view: DashboardHeaderView)
 }
 
 /// The search field above the cards, with the "add custom property" button.
@@ -139,7 +140,7 @@ final class DashboardHeaderView: BaseView, NSTextFieldDelegate {
     }
 
     @objc private func handleAddCustomAttr() {
-        AppHelper.showDisabledExternalLinkAlert(withMessage: NSLocalizedString("Legacy custom property guides are disabled in this community build. See the repository README instead.", comment: ""))
+        delegate?.dashboardHeaderViewDidRequestCustomPropertiesGuide(self)
     }
 
     // MARK: - NSTextFieldDelegate

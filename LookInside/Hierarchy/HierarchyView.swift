@@ -117,6 +117,25 @@ class HierarchyView: BaseView {
         fatalError("HierarchyView is not loaded from archives")
     }
 
+    override func performKeyEquivalent(with event: NSEvent) -> Bool {
+        let modifiers = event.modifierFlags.intersection(.deviceIndependentFlagsMask)
+        let listHasFocus = (window?.firstResponder as? NSView).map { $0.isDescendant(of: tableView) } ?? false
+        if listHasFocus, modifiers == .command, event.charactersIgnoringModifiers?.lowercased() == "c" {
+            copySelectedObjectIdentifier()
+            return true
+        }
+        return super.performKeyEquivalent(with: event)
+    }
+
+    private func copySelectedObjectIdentifier() {
+        guard let item = dataSource.selectedItem,
+              let identifier = LKMCPObjectIdentifierFormatter.objectIdentifier(for: item)
+        else { return }
+        let pasteboard = NSPasteboard.general
+        pasteboard.clearContents()
+        pasteboard.setString(identifier, forType: .string)
+    }
+
     deinit {
         if let textChangeObserver {
             NotificationCenter.default.removeObserver(textChangeObserver)
@@ -491,6 +510,25 @@ class HierarchyView: BaseView {
         pasteboard.writeObjects([string as NSString])
     }
 
+    @objc fileprivate func handleCopyDisplayItemLocationTree(_ menuItem: NSMenuItem) {
+        guard let item = displayItem(of: menuItem) else { return }
+        let string = LKHierarchyLocationTreeFormatter.locationTree(
+            forDisplayItem: item,
+            titleProvider: { $0.title() },
+            subtitleProvider: { $0.subtitle() }
+        )
+        let pasteboard = NSPasteboard.general
+        pasteboard.clearContents()
+        pasteboard.writeObjects([string as NSString])
+    }
+
+    @objc fileprivate func handleCopyObjectIdentifier(_ menuItem: NSMenuItem) {
+        guard let identifier = menuItem.representedObject as? String, !identifier.isEmpty else { return }
+        let pasteboard = NSPasteboard.general
+        pasteboard.clearContents()
+        pasteboard.setString(identifier, forType: .string)
+    }
+
     @objc fileprivate func handleExpandRecursively(_ menuItem: NSMenuItem) {
         guard let item = displayItem(of: menuItem) else {
             assertionFailure("the menu item carries no display item")
@@ -599,6 +637,10 @@ extension HierarchyView: NSMenuDelegate {
 
         if !displayItem.isUserCustom() {
             menu.addItem(menuItem(NSLocalizedString("Focus", comment: ""), action: #selector(handleFocusCurrentItem(_:))))
+            menu.addItem(menuItem(NSLocalizedString("Copy View/Layer location", comment: ""), action: #selector(handleCopyDisplayItemLocationTree(_:))))
+            if let identifier = LKMCPObjectIdentifierFormatter.objectIdentifier(for: displayItem) {
+                menu.addItem(menuItem(NSLocalizedString("Copy Object ID", comment: ""), action: #selector(handleCopyObjectIdentifier(_:)), representedObject: identifier))
+            }
             if !isReadOnly {
                 menu.addItem(menuItem(NSLocalizedString("Print", comment: ""), action: #selector(handlePrintItem(_:))))
             }

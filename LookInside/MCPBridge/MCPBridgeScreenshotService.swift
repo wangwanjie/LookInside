@@ -238,8 +238,11 @@ final class MCPBridgeScreenshotService {
         }
 
         // Slow path: ask the target app to render it now.
-        // A SwiftUI node's screenshot comes by its detail oid.
-        guard case let nativeObjectIdentifier = displayItem.detailRequestOid,
+        // iOS 节点按 layer oid 截图，与 GUI 详情拉取规则一致（SwiftUI 节点用 detail oid）。
+        guard let nativeObjectIdentifier = MCPBridgeLiveDocumentLookup.hierarchyDetailsObjectIdentifier(
+            for: displayItem,
+            targetAppInfo: document.inspectableApp.appInfo
+        ),
               nativeObjectIdentifier != 0
         else {
             return .failure(

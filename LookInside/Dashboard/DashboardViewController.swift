@@ -21,6 +21,7 @@ final class DashboardViewController: BaseViewController, DashboardCardViewDelega
     private let cardContainerView = BaseView()
     private let searchContainerView = BaseView()
     private let headerView = DashboardHeaderView()
+    private let objectIDView = LKDashboardObjectIDView()
 
     private var groupList: [AttributesGroup] = []
     /// Keyed by `AttributesGroup.uniqueKey`.
@@ -93,6 +94,7 @@ final class DashboardViewController: BaseViewController, DashboardCardViewDelega
         documentView.addSubview(headerView)
 
         documentView.addSubview(cardContainerView)
+        cardContainerView.addSubview(objectIDView)
 
         searchContainerView.isHidden = true
         documentView.addSubview(searchContainerView)
@@ -158,6 +160,10 @@ final class DashboardViewController: BaseViewController, DashboardCardViewDelega
         if !cardContainerView.isHidden {
             cardContainerView.dashboardLayout.width(contentWidth).x(horInset).y(headerView.frame.maxY + verMargin)
             var y: CGFloat = 0
+            if !objectIDView.isHidden {
+                objectIDView.dashboardLayout.width(contentWidth).y(y).height(LKDashboardObjectIDView.preferredHeight)
+                y = objectIDView.frame.maxY + verMargin
+            }
             for group in groupList {
                 guard let view = cardViews[group.uniqueKey() ?? ""], !view.isHidden else { continue }
                 view.dashboardLayout.width(contentWidth).y(y).heightToFit()
@@ -199,6 +205,10 @@ final class DashboardViewController: BaseViewController, DashboardCardViewDelega
 
     private func reload(groupList list: [AttributesGroup]) {
         groupList = list
+        let objectIdentifier = currentDataSource()?.selectedItem.flatMap {
+            LKMCPObjectIdentifierFormatter.objectIdentifier(for: $0)
+        }
+        objectIDView.render(objectIdentifier: objectIdentifier)
 
         if list.isEmpty {
             scrollView.isHidden = true
@@ -338,6 +348,10 @@ final class DashboardViewController: BaseViewController, DashboardCardViewDelega
     }
 
     // MARK: - DashboardHeaderViewDelegate
+
+    func dashboardHeaderViewDidRequestCustomPropertiesGuide(_: DashboardHeaderView) {
+        LKCustomPropertyGuideWindowController.showGuideWindow()
+    }
 
     func dashboardHeaderView(_: DashboardHeaderView, didInputString string: String) {
         guard string.count >= 3 else {

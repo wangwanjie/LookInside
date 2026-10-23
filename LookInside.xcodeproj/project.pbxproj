@@ -136,6 +136,8 @@
 				Dashboard/DashboardSectionView.swift,
 				Dashboard/DashboardViewController.swift,
 				Dashboard/EnumListRegistry.swift,
+				Dashboard/LKCustomPropertyGuideWindowController.swift,
+				Dashboard/LKDashboardObjectIDView.swift,
 				Dashboard/Search/DashboardHeaderView.swift,
 				Dashboard/Search/DashboardSearchViews.swift,
 				DebugE2E/DebugE2EDump.swift,
@@ -163,6 +165,7 @@
 				Hierarchy/HierarchyRowView.swift,
 				Hierarchy/HierarchyView.swift,
 				Hierarchy/KuGouHierarchyCollapse.swift,
+				Hierarchy/LKHierarchyLocationTreeFormatter.swift,
 				Hierarchy/SyncSignal.swift,
 				InfoPlist.xcstrings,
 				Injection/Device/AttachedDeviceMonitor.swift,
@@ -191,6 +194,8 @@
 				Manager/PreferenceManager.swift,
 				MCPBridge/MCPBridgeAttributeEncoder.swift,
 				MCPBridge/MCPBridgeAttributeValueDecoder.swift,
+				MCPBridge/LKMCPBridgeDetailObjectIdentifierSelector.swift,
+				MCPBridge/LKMCPObjectIdentifierFormatter.swift,
 				MCPBridge/MCPBridgeConnection.swift,
 				MCPBridge/MCPBridgeDetailsService.swift,
 				MCPBridge/MCPBridgeEventPublisher.swift,
@@ -380,6 +385,7 @@
 				50EADFB42F71C00C00EBE063 /* Sources */,
 				AA48F29821CC0CA50032EC2C /* Frameworks */,
 				AA48F29921CC0CA50032EC2C /* Resources */,
+				E9D100012FC4000000010001 /* Copy MCP Shim */,
 				5005F8FE2FA505DF00C0BB07 /* Embed Injector Daemon */,
 				5005F8FF2FA505DF00C0BB07 /* Embed MCP CLI */,
 			);
@@ -515,6 +521,27 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXShellScriptBuildPhase section */
+		E9D100012FC4000000010001 /* Copy MCP Shim */ = {
+			isa = PBXShellScriptBuildPhase;
+			alwaysOutOfDate = 1;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			inputFileListPaths = (
+			);
+			inputPaths = (
+				"$(SRCROOT)/Scripts/lookinside-mcp-shim.mjs",
+			);
+			name = "Copy MCP Shim";
+			outputFileListPaths = (
+			);
+			outputPaths = (
+				"$(TARGET_BUILD_DIR)/$(UNLOCALIZED_RESOURCES_FOLDER_PATH)/MCP/lookinside-mcp-shim.mjs",
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+			shellPath = /bin/sh;
+			shellScript = "set -euo pipefail\nMCP_RESOURCES_DIR=\"$TARGET_BUILD_DIR/$UNLOCALIZED_RESOURCES_FOLDER_PATH/MCP\"\nmkdir -p \"$MCP_RESOURCES_DIR\"\ncp \"$SRCROOT/Scripts/lookinside-mcp-shim.mjs\" \"$MCP_RESOURCES_DIR/lookinside-mcp-shim.mjs\"\nchmod 755 \"$MCP_RESOURCES_DIR/lookinside-mcp-shim.mjs\"\n";
+		};
 		5005F8FE2FA505DF00C0BB07 /* Embed Injector Daemon */ = {
 			isa = PBXShellScriptBuildPhase;
 			alwaysOutOfDate = 1;

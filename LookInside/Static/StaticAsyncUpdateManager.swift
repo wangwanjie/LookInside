@@ -514,11 +514,21 @@ final class StaticAsyncUpdateManager: NSObject {
 
     private static func packages(from tasks: [StaticAsyncUpdateTask], kind: DetailRequestKind) -> [StaticAsyncUpdateTasksPackage] {
         let areas = tasks.map { Double($0.frameSize.width * $0.frameSize.height) }
+        // 每批任务数与截图面积上限可在设置里调整（默认 20 / 500,000），
+        // 大型 App（如酷狗）一次拉太多详情会卡住主线程
+        let preferences = PreferenceManager.shared
+        let configuredMaxArea = Double(preferences.detailPackageMaxArea)
+        let configuredMaxCount = preferences.detailPackageMaxTasksCount
         let ranges = switch kind {
         case .foreground, .wholeTree:
-            DetailTaskPackaging.packageRanges(areas: areas)
+            DetailTaskPackaging.packageRanges(areas: areas, maxArea: configuredMaxArea, maxCount: configuredMaxCount)
         case .prefetch:
-            DetailTaskPackaging.packageRanges(areas: areas, maxArea: prefetchPackageMaximumArea, maxCount: prefetchPackageMaximumTaskCount)
+            // 预取批次本身就要小，取固定上限和设置值中较小的一个
+            DetailTaskPackaging.packageRanges(
+                areas: areas,
+                maxArea: min(prefetchPackageMaximumArea, configuredMaxArea),
+                maxCount: min(prefetchPackageMaximumTaskCount, configuredMaxCount)
+            )
         }
         return ranges.map { range in
             let package = StaticAsyncUpdateTasksPackage()

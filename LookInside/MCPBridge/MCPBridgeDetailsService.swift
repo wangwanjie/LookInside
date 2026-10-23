@@ -140,8 +140,11 @@ final class MCPBridgeDetailsService {
                 amongRoots: roots,
                 matchingObjectIdentifier: requested
             ),
-                case let nativeOid = displayItem.detailRequestOid,
-                nativeOid != 0
+                  let nativeOid = MCPBridgeLiveDocumentLookup.hierarchyDetailsObjectIdentifier(
+                    for: displayItem,
+                    targetAppInfo: document.inspectableApp.appInfo
+                  ),
+                  nativeOid != 0
             else {
                 failedIdentifiers.append(requested)
                 continue
@@ -278,6 +281,9 @@ final class MCPBridgeDetailsService {
 
             emittedDetails.append(MCPBridgeViewDetail(
                 objectIdentifier: resolved.identifier,
+                parentObjectIdentifier: MCPBridgeLiveDocumentLookup.parent(of: resolved.displayItem).map(
+                    MCPBridgeLiveDocumentLookup.objectIdentifierString(for:)
+                ),
                 groups: encodedGroups,
                 secureContent: redactSecureContent
             ))

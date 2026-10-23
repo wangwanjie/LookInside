@@ -17,7 +17,7 @@ mkdir -p \
 
 format_output() {
 	if command -v xcbeautify >/dev/null 2>&1; then
-		xcbeautify --disable-logging
+		xcbeautify
 	else
 		cat
 	fi
@@ -78,6 +78,7 @@ run_command "MessageAttribute tests" bash Scripts/test-message-attribute.sh
 run_command "MCPBridge tests" bash Scripts/test-mcp-bridge.sh
 run_command "Launch / Toolbar / Read tests" bash Scripts/test-launch-toolbar-read.sh
 run_command "Dashboard tests" bash Scripts/test-dashboard.sh
+run_command "dashboard feature tests" bash Scripts/test-dashboard-features.sh
 run_command "Xcode view hierarchy tests" bash Scripts/test-xcode-viewhierarchy.sh
 run_command "security gate tests" bash Scripts/test-security-gates.sh
 run_swift_build "swift build" build

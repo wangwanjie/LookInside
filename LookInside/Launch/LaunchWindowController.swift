@@ -61,18 +61,13 @@ final class LaunchWindowController: WindowController, NSWindowDelegate {
     }
 
     private func makeToolbar() -> NSToolbar {
-        let attachToRunningAppTitle = NSLocalizedString("Attach to Running App…", comment: "")
         let attachToAppOnDeviceTitle = NSLocalizedString("Attach to App on Device…", comment: "")
         let openFileTitle = NSLocalizedString("Open File…", comment: "Launch window toolbar button that opens a .lookin or .viewhierarchy file")
         let reloadTitle = NSLocalizedString("Reload", comment: "")
         let newInspectionTitle = NSLocalizedString("New Inspection", comment: "Title of the launch window")
         let newInspectionMenu = NSMenu()
-        newInspectionMenu.addItem(Self.makeMenuItem(
-            title: attachToRunningAppTitle,
-            symbolName: "laptopcomputer",
-            target: self,
-            action: #selector(handleAttachToRunningApp(_:))
-        ))
+        // 酷狗版：启动窗口不提供「Attach to Running App…」入口（同事 dfd105e 的改动，
+        // 本版本 DMG 未内嵌注入器，该入口无法使用）；菜单栏 File 里的同名项保留。
         newInspectionMenu.addItem(Self.makeMenuItem(
             title: attachToAppOnDeviceTitle,
             symbolName: "iphone",
